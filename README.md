@@ -24,7 +24,7 @@ Give your apps, CLIs, and agents a voice. VoiPi is a universal, zero-dependency,
   <img src="./website/demo.svg" alt="voipi demo" width="600">
 </p>
 
-<a href="https://voipi.vercel.app/"><img src="https://img.shields.io/badge/%F0%9F%94%8A_Listen_to_Samples-voipi.vercel.app-blue?style=for-the-badge" alt="Listen to Samples" /></a>
+<a href="https://voipi.vercel.app/#samples"><img src="https://img.shields.io/badge/%F0%9F%94%8A_VoiPi-Listen_to_Samples-yellow?style=for-the-badge" alt="Listen to Samples" /></a>
 
 ## CLI
 
