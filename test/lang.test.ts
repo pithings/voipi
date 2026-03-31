@@ -30,6 +30,7 @@ describe("detectLanguage", () => {
   // Latin-script languages (diacritics-based)
   const latinTests: [string, string, string][] = [
     ["French", "L'éducation française est très appréciée", "fr"],
+    ["French (casual)", "Salut mon pote, comment ça va ?", "fr"],
     ["Spanish", "¿Cómo estás? Niño pequeño", "es"],
     ["German", "Straßenbahn und Gemütlichkeit", "de"],
     ["Portuguese", "Obrigação e coração", "pt"],

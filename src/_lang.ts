@@ -76,7 +76,8 @@ function isArabicScript(cp: number): boolean {
 // Diacritics/characters distinctive to specific Latin-script languages
 // Each entry: [charSet, langCode, weight]
 const latinSignatures: [string, string, number][] = [
-  ["éèêëàâçîïôùûœæ", "fr", 1],
+  ["éèêëàâîïôùûœæ", "fr", 1],
+  ["ç", "fr", 2],
   ["ñ¿¡", "es", 2],
   ["áóúéí", "es", 0.5],
   ["ßäöü", "de", 2],
