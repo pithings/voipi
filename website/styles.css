@@ -1,3 +1,30 @@
+@font-face {
+  font-family: "Geist Sans";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.7.0/dist/fonts/geist-sans/Geist-Variable.woff2")
+    format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.7.0/dist/fonts/geist-mono/GeistMono-Variable.woff2")
+    format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Pixel";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.7.0/dist/fonts/geist-pixel/GeistPixel-Square.woff2")
+    format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --bg: #0a0a0a;
   --surface: #141414;
@@ -8,7 +35,8 @@
   --accent-dim: #a3891a;
   --code-bg: #1a1a1a;
   --radius: 10px;
-  --mono: "SF Mono", "Cascadia Code", "Fira Code", ui-monospace, monospace;
+  --mono: "Geist Mono", "SF Mono", "Cascadia Code", "Fira Code", ui-monospace, monospace;
+  --pixel: "Geist Pixel", "Geist Sans", system-ui, sans-serif;
 }
 * {
   margin: 0;
@@ -20,6 +48,7 @@ html {
 }
 body {
   font-family:
+    "Geist Sans",
     system-ui,
     -apple-system,
     "Segoe UI",
@@ -68,6 +97,7 @@ section + section {
   margin-bottom: 0;
 }
 .hero h1 {
+  font-family: var(--pixel);
   font-size: 2.5rem;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -336,6 +366,7 @@ section + section {
 
 /* Section titles */
 .section-title {
+  font-family: var(--pixel);
   font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 1.25rem;
