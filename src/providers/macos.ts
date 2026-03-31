@@ -2,8 +2,27 @@ import type { SpeakOptions, Voice } from "../types.ts";
 import { BaseVoiceProvider, type AudioData } from "../_provider.ts";
 import { exec, getNodeBuiltin, resolveVoice } from "../_utils.ts";
 
+export interface MacOSOptions {
+  /** Default voice name (e.g. "Samantha", "Daniel") */
+  voice?: string;
+  /** Default speech rate multiplier (1.0 = normal, maps to ~175 wpm) */
+  rate?: number;
+}
+
 export class MacOS extends BaseVoiceProvider {
   name = "macos";
+  private _defaults: MacOSOptions;
+
+  constructor(options?: MacOSOptions) {
+    super();
+    this._defaults = { ...options };
+    if (
+      typeof globalThis.process?.platform !== "undefined" &&
+      globalThis.process.platform !== "darwin"
+    ) {
+      throw new Error("MacOS provider is only available on macOS");
+    }
+  }
 
   override hasVoice(id: string): boolean {
     // Common built-in macOS voices (avoids exec call for fast path)
@@ -41,7 +60,7 @@ export class MacOS extends BaseVoiceProvider {
     const args: string[] = [];
 
     const voice = await resolveVoice(
-      options?.voice,
+      options?.voice ?? this._defaults.voice,
       () => this.listVoices(),
       (id) => this.hasVoice(id),
     );
@@ -49,8 +68,9 @@ export class MacOS extends BaseVoiceProvider {
       args.push("-v", voice);
     }
 
-    if (options?.rate != null) {
-      args.push("-r", String(Math.round(175 * options.rate)));
+    const rate = options?.rate ?? this._defaults.rate;
+    if (rate != null) {
+      args.push("-r", String(Math.round(175 * rate)));
     }
 
     if (extraArgs) {

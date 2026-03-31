@@ -96,9 +96,11 @@ Uses the native `say` command. Only available on macOS.
 ```ts
 import { MacOS } from "voipi/macos";
 
-const voice = new MacOS();
+const voice = new MacOS({ voice: "Samantha", rate: 1.2 });
 await voice.speak("Hello world!");
-await voice.speak("Hello!", { voice: "Samantha", rate: 1.5 });
+
+// Override defaults per call
+await voice.speak("Hello!", { voice: "Daniel", rate: 1.5 });
 ```
 
 ### Edge TTS

@@ -6,7 +6,10 @@ import { resolveVoice } from "./_utils.ts";
 export type ProviderFactory = () => BaseVoiceProvider | Promise<BaseVoiceProvider>;
 
 /** Provider definition: name, [name, options], or factory function */
-export type ProviderDef = string | [name: string, options: Record<string, unknown>] | ProviderFactory;
+export type ProviderDef =
+  | string
+  | [name: string, options: Record<string, unknown>]
+  | ProviderFactory;
 
 export interface VoiPiOptions {
   /** Custom provider chain. First available provider wins. */
@@ -17,7 +20,10 @@ export interface VoiPiOptions {
  * Named provider factories for explicit provider selection.
  * Keys are the provider names used in CLI and programmatic API.
  */
-export const providerMap: Record<string, (options?: Record<string, unknown>) => BaseVoiceProvider | Promise<BaseVoiceProvider>> = {
+export const providerMap: Record<
+  string,
+  (options?: Record<string, unknown>) => BaseVoiceProvider | Promise<BaseVoiceProvider>
+> = {
   macos: (opts) => import("./providers/macos.ts").then((m) => new m.MacOS(opts)),
   piper: (opts) => import("./providers/piper.ts").then((m) => new m.Piper(opts)),
   "edge-tts": (opts) => import("./providers/edge-tts.ts").then((m) => new m.EdgeTTS(opts)),
@@ -53,7 +59,8 @@ export class VoiPi extends BaseVoiceProvider {
   /** Resolve the first available provider from the chain. */
   async resolveProvider(): Promise<BaseVoiceProvider> {
     if (this._provider) return this._provider;
-    const pending = this._resolving ?? (this._resolving = _resolve(this._factories, this._factoryIndex));
+    const pending =
+      this._resolving ?? (this._resolving = _resolve(this._factories, this._factoryIndex));
     try {
       const [provider, index] = await pending;
       this._provider = provider;
@@ -65,9 +72,7 @@ export class VoiPi extends BaseVoiceProvider {
   }
 
   async synthesize(text: string, options?: SpeakOptions): Promise<AudioData> {
-    return this._callWithFallback((provider) =>
-      provider.synthesize(text, options),
-    );
+    return this._callWithFallback((provider) => provider.synthesize(text, options));
   }
 
   override async speak(text: string, options?: SpeakOptions): Promise<void> {
@@ -90,9 +95,7 @@ export class VoiPi extends BaseVoiceProvider {
   }
 
   /** Try current provider, fallback to remaining on failure. */
-  private async _callWithFallback<T>(
-    fn: (provider: BaseVoiceProvider) => Promise<T>,
-  ): Promise<T> {
+  private async _callWithFallback<T>(fn: (provider: BaseVoiceProvider) => Promise<T>): Promise<T> {
     const provider = await this.resolveProvider();
     try {
       return await fn(provider);
@@ -114,7 +117,9 @@ function _toFactory(def: ProviderDef): ProviderFactory {
   const [name, options] = typeof def === "string" ? [def] : def;
   const creator = providerMap[name];
   if (!creator) {
-    throw new Error(`Unknown provider: "${name}". Available: ${Object.keys(providerMap).join(", ")}`);
+    throw new Error(
+      `Unknown provider: "${name}". Available: ${Object.keys(providerMap).join(", ")}`,
+    );
   }
   return () => creator(options);
 }
