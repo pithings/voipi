@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.0.3
+
+[compare changes](https://github.com/pithings/voipi/compare/v0.0.2...v0.0.3)
+
+### 🏡 Chore
+
+- Update org ([7ef913d](https://github.com/pithings/voipi/commit/7ef913d))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+
 ## v0.0.2
 
 [compare changes](https://github.com/pithings/voipi/compare/v0.0.1...v0.0.2)
