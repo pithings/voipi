@@ -17,7 +17,7 @@ const SVG_FILE = join(ROOT, "website/demo.svg");
 const scriptDir = mkdtempSync(join(tmpdir(), "voipi-demo-"));
 const scriptFile = join(scriptDir, "demo.sh");
 
-const DEMO_CMD = `pnpm voipi speak "Voice is Better!" -p edge-tts`;
+const DEMO_CMD = `bunx voipi speak "Every word deserves a voice." -p edge-tts`;
 
 const innerScript = `#!/bin/bash
 type_slow() {

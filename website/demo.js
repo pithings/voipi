@@ -279,7 +279,7 @@ function initDemo() {
     updateCommand();
     saveToURL();
   });
-  rateInput.addEventListener("input", () => {
+  rateInput.addEventListener("change", () => {
     updateCommand();
     updateDuration();
     saveToURL();

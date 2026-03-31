@@ -324,9 +324,9 @@ section + section {
   margin-bottom: 0.5rem;
 }
 .feature-tag {
-  font-size: 0.65rem;
+  font-size: 0.55rem;
   font-weight: 500;
-  padding: 0.2rem 0.55rem;
+  padding: 0.15rem 0.45rem;
   border-radius: 99px;
   border: 1px solid var(--border);
   color: var(--text-muted);
@@ -454,7 +454,7 @@ pre .op {
 }
 .demo-wrap img {
   width: 100%;
-  max-width: 560px;
+  max-width: 680px;
   border-radius: 6px;
   cursor: pointer;
   transition: transform 0.15s;

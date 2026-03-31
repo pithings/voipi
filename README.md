@@ -1,15 +1,8 @@
 <p align="center">
-  <img src="logo.svg" alt="voipi" width="128" height="128">
+  <a href="https://voipi.vercel.app/"><img src="logo.svg" alt="voipi" width="128" height="128"></a>
 </p>
 
-<h1 align="center">voipi</h1>
-
-<!-- automd:badges color=yellow -->
-
-[![npm version](https://img.shields.io/npm/v/voipi?color=yellow)](https://npmjs.com/package/voipi)
-[![npm downloads](https://img.shields.io/npm/dm/voipi?color=yellow)](https://npm.chart.dev/voipi)
-
-<!-- /automd -->
+<h1 align="center"><a href="https://voipi.vercel.app/">voipi</a></h1>
 
 Give your apps, CLIs, and agents a voice. VoiPi is a universal, zero-dependency, free text-to-speech library for JavaScript.
 
