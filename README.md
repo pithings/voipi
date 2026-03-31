@@ -234,4 +234,4 @@ const voices = await voice.listVoices();
 
 ## License
 
-Published under the [MIT](https://github.com/unjs/voipi/blob/main/LICENSE) license 💛.
+Published under the [MIT](https://github.com/pithings/voipi/blob/main/LICENSE) license 💛.
