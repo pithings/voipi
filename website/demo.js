@@ -182,15 +182,6 @@ function initDemo() {
     });
   }
 
-  for (const btn of runnerButtons) {
-    btn.addEventListener("click", () => {
-      for (const b of runnerButtons) b.classList.remove("active");
-      btn.classList.add("active");
-      runner = btn.dataset.runner;
-      updateCommand();
-    });
-  }
-
   const durationEl = document.getElementById("demo-duration");
   const langEl = document.getElementById("demo-detected-lang");
 
@@ -214,20 +205,111 @@ function initDemo() {
     }
   }
 
-  providerSelect.addEventListener("change", updateVoices);
-  voiceSelect.addEventListener("change", updateCommand);
-  langSelect.addEventListener("change", updateCommand);
+  function getParams() {
+    return {
+      provider: providerSelect.value,
+      voice: voiceSelect.value,
+      lang: langSelect.value,
+      rate: rateInput.value,
+      output: outputInput.value,
+      text: textInput.value,
+      runner,
+    };
+  }
+
+  const DEFAULTS = {
+    provider: "edge-tts",
+    voice: "",
+    lang: "auto",
+    rate: "",
+    output: "",
+    text: "Hello, World!",
+    runner: "npx",
+  };
+
+  function saveToURL() {
+    const params = getParams();
+    // Only encode non-default values
+    const diff = {};
+    for (const [k, v] of Object.entries(params)) {
+      if (v !== DEFAULTS[k]) diff[k] = v;
+    }
+    if (Object.keys(diff).length > 0) {
+      const encoded = btoa(JSON.stringify(diff));
+      history.replaceState(null, "", `?d=${encoded}`);
+    } else {
+      history.replaceState(null, "", location.pathname);
+    }
+  }
+
+  function restoreFromURL() {
+    const url = new URL(location.href);
+    const encoded = url.searchParams.get("d");
+    if (!encoded) return false;
+    try {
+      const params = JSON.parse(atob(encoded));
+      if (params.provider) providerSelect.value = params.provider;
+      updateVoices(); // populate voices for selected provider before setting voice
+      if (params.voice) voiceSelect.value = params.voice;
+      if (params.lang) langSelect.value = params.lang;
+      if (params.rate) rateInput.value = params.rate;
+      if (params.output) outputInput.value = params.output;
+      if (params.text) textInput.value = params.text;
+      if (params.runner) {
+        runner = params.runner;
+        for (const b of runnerButtons) {
+          b.classList.toggle("active", b.dataset.runner === runner);
+        }
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  providerSelect.addEventListener("change", () => {
+    updateVoices();
+    saveToURL();
+  });
+  voiceSelect.addEventListener("change", () => {
+    updateCommand();
+    saveToURL();
+  });
+  langSelect.addEventListener("change", () => {
+    updateCommand();
+    saveToURL();
+  });
   rateInput.addEventListener("input", () => {
     updateCommand();
     updateDuration();
+    saveToURL();
   });
-  outputInput.addEventListener("input", updateCommand);
+  outputInput.addEventListener("input", () => {
+    updateCommand();
+    saveToURL();
+  });
   textInput.addEventListener("input", () => {
     updateCommand();
     updateDuration();
+    saveToURL();
   });
-  providerSelect.value = "edge-tts";
-  updateVoices();
+
+  for (const btn of runnerButtons) {
+    btn.addEventListener("click", () => {
+      for (const b of runnerButtons) b.classList.remove("active");
+      btn.classList.add("active");
+      runner = btn.dataset.runner;
+      updateCommand();
+      saveToURL();
+    });
+  }
+
+  // Restore from URL or use defaults
+  if (!restoreFromURL()) {
+    providerSelect.value = "edge-tts";
+    updateVoices();
+  }
+  updateCommand();
   updateDuration();
 }
 

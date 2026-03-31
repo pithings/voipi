@@ -55,6 +55,12 @@ section + section {
   padding: 4rem 0 3rem;
   text-align: center;
 }
+.hero-brand,
+.hero-brand:hover {
+  text-decoration: none;
+  color: inherit;
+  display: inline-block;
+}
 .hero-logo {
   height: 80px;
   margin-bottom: 1.25rem;
