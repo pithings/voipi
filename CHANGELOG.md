@@ -1,6 +1,27 @@
 # Changelog
 
 
+## v0.0.2
+
+[compare changes](https://github.com/unjs/voipi/compare/v0.0.1...v0.0.2)
+
+### 🚀 Enhancements
+
+- Language detection ([d1208a4](https://github.com/unjs/voipi/commit/d1208a4))
+
+### 🩹 Fixes
+
+- **google-tts:** Accept `voic` ([d352506](https://github.com/unjs/voipi/commit/d352506))
+
+### 🏡 Chore
+
+- Update readme ([1c04164](https://github.com/unjs/voipi/commit/1c04164))
+- Update website ([5b015c9](https://github.com/unjs/voipi/commit/5b015c9))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+
 ## v0.0.1
 
 
