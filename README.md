@@ -64,12 +64,25 @@ await voice.speak("Hello!", { outputFile: "output.mp3" });
 const voices = await voice.listVoices();
 ```
 
-You can also provide a custom provider chain:
+You can also provide a custom provider chain using names, `[name, options]` tuples, or factory functions:
 
 ```ts
-import { VoiPi, MacOS, EdgeTTS } from "voipi";
+import { VoiPi } from "voipi";
 
+// Using provider names
 const voice = new VoiPi({
+  providers: ["edge-tts", "macos"],
+});
+
+// Using [name, options] tuples for provider configuration
+const voice2 = new VoiPi({
+  providers: [["edge-tts", { voice: "en-US-GuyNeural" }], "macos"],
+});
+
+// Using factory functions for full control
+import { MacOS, EdgeTTS } from "voipi";
+
+const voice3 = new VoiPi({
   providers: [() => new EdgeTTS({ voice: "en-US-GuyNeural" }), () => new MacOS()],
 });
 ```
