@@ -64,21 +64,29 @@ async function main(): Promise<void> {
       return;
     }
 
-    await voipi.speak(text, {
+    const opts = {
       voice: values.voice,
       rate: values.rate ? Number(values.rate) : undefined,
-      outputFile: values.output,
-    });
+    };
+    if (values.output) {
+      await voipi.save(text, values.output, opts);
+    } else {
+      await voipi.speak(text, opts);
+    }
   } else if (command === "voices") {
     await showVoices(voipi);
   } else {
     // Treat unknown command as text for speak
     const text = positionals.join(" ");
-    await voipi.speak(text, {
+    const opts = {
       voice: values.voice,
       rate: values.rate ? Number(values.rate) : undefined,
-      outputFile: values.output,
-    });
+    };
+    if (values.output) {
+      await voipi.save(text, values.output, opts);
+    } else {
+      await voipi.speak(text, opts);
+    }
   }
 }
 

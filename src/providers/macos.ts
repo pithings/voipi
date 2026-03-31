@@ -53,7 +53,22 @@ export class MacOS extends BaseVoiceProvider {
   }
 
   override async save(text: string, outputFile: string, options?: SpeakOptions): Promise<void> {
-    await this._say(text, options, ["-o", outputFile]);
+    const { extname } = getNodeBuiltin("node:path");
+    const ext = extname(outputFile).toLowerCase();
+    const format = _extToFormat[ext];
+    if (format) {
+      await this._say(text, options, [
+        "-o",
+        outputFile,
+        "--file-format",
+        format.fileFormat,
+        "--data-format",
+        format.dataFormat,
+      ]);
+    } else {
+      // Unsupported by `say` — fall back to synthesize + write
+      await BaseVoiceProvider.prototype.save.call(this, text, outputFile, options);
+    }
   }
 
   private async _say(text: string, options?: SpeakOptions, extraArgs?: string[]): Promise<void> {
@@ -99,3 +114,19 @@ export class MacOS extends BaseVoiceProvider {
     return voices;
   }
 }
+
+// ---- internals ----
+
+const _extToFormat: Record<string, { fileFormat: string; dataFormat: string }> = {
+  ".aiff": { fileFormat: "AIFF", dataFormat: "BEI16" },
+  ".aif": { fileFormat: "AIFF", dataFormat: "BEI16" },
+  ".wav": { fileFormat: "WAVE", dataFormat: "LEI16" },
+  ".flac": { fileFormat: "flac", dataFormat: "flac" },
+  ".m4a": { fileFormat: "m4af", dataFormat: "aac" },
+  ".aac": { fileFormat: "adts", dataFormat: "aac" },
+  ".caf": { fileFormat: "caff", dataFormat: "aac" },
+  ".ogg": { fileFormat: "Oggf", dataFormat: "opus" },
+  ".opus": { fileFormat: "Oggf", dataFormat: "opus" },
+  ".snd": { fileFormat: "NeXT", dataFormat: "LEI16" },
+  ".au": { fileFormat: "NeXT", dataFormat: "LEI16" },
+};

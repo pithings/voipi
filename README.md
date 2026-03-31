@@ -58,7 +58,7 @@ await voice.speak("Hello world!");
 await voice.speak("Hello!", { voice: ["Samantha", "en-US-AriaNeural"], rate: 1.5 });
 
 // Save to file
-await voice.speak("Hello!", { outputFile: "output.mp3" });
+await voice.save("Hello!", "output.mp3");
 
 // List available voices
 const voices = await voice.listVoices();

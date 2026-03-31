@@ -3,6 +3,18 @@ import { MacOS, EdgeTTS, GoogleTTS, BaseVoiceProvider } from "../src/index.ts";
 
 const isMacOS = process.platform === "darwin";
 
+const MAGIC_HEADERS: Record<string, { bytes: number[]; label: string; mask?: number[] }[]> = {
+  macos: [{ bytes: [0x46, 0x4f, 0x52, 0x4d], label: "AIFF (FORM)" }],
+  "edge-tts": [
+    { bytes: [0xff, 0xe0], label: "MP3 (sync word)", mask: [0xff, 0xe0] },
+    { bytes: [0x49, 0x44, 0x33], label: "MP3 (ID3)" },
+  ],
+  "google-tts": [
+    { bytes: [0xff, 0xe0], label: "MP3 (sync word)", mask: [0xff, 0xe0] },
+    { bytes: [0x49, 0x44, 0x33], label: "MP3 (ID3)" },
+  ],
+};
+
 const providers = [
   { name: "macos", factory: () => new MacOS(), skip: !isMacOS },
   { name: "edge-tts", factory: () => new EdgeTTS(), skip: false },
@@ -36,6 +48,19 @@ describe("voipi", () => {
         expect(audio).toHaveProperty("data");
         expect(audio.data).toBeInstanceOf(Buffer);
         expect(audio.data.length).toBeGreaterThan(0);
+      });
+
+      it("synthesizes audio with correct format magic header", async () => {
+        const provider = factory();
+        const audio = await provider.synthesize("hi");
+        const headers = MAGIC_HEADERS[name]!;
+        const matches = headers.some((h) =>
+          h.bytes.every((b, i) => ((audio.data[i]!) & (h.mask?.[i] ?? 0xff)) === b),
+        );
+        const actual = [...audio.data.subarray(0, 4)]
+          .map((b) => b.toString(16).padStart(2, "0"))
+          .join(" ");
+        expect(matches, `expected ${headers.map((h) => h.label).join(" or ")}, got [${actual}]`).toBe(true);
       });
     });
   }

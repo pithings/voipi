@@ -86,6 +86,17 @@ export class VoiPi extends BaseVoiceProvider {
     });
   }
 
+  override async save(text: string, outputFile: string, options?: SpeakOptions): Promise<void> {
+    return this._callWithFallback(async (provider) => {
+      const voice = await resolveVoice(
+        options?.voice,
+        provider.listVoices?.bind(provider),
+        provider.hasVoice?.bind(provider),
+      );
+      return provider.save(text, outputFile, voice ? { ...options, voice } : options);
+    });
+  }
+
   override async listVoices(): Promise<Voice[]> {
     const provider = await this.resolveProvider();
     if (!provider.listVoices) {
