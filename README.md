@@ -42,7 +42,7 @@ npx voipi "Hi" -v en-US-BrianNeural -r 1.5
 npx voipi speak "Hi" -o hello.mp3
 
 # Use a specific provider
-npx voipi speak "Bonjour" -p google-tts -v fr
+npx voipi "Bonjour le monde" -p edge-tts -v fr-FR-DeniseNeural
 
 # List available voices
 npx voipi voices
