@@ -1,0 +1,48 @@
+{
+  "name": "voipi",
+  "version": "0.0.0",
+  "description": "",
+  "license": "MIT",
+  "repository": "unjs/voipi",
+  "bin": {
+    "voipi": "./dist/cli.mjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./macos": "./dist/providers/macos.mjs",
+    "./edge-tts": "./dist/providers/edge-tts.mjs",
+    "./google-tts": "./dist/providers/google-tts.mjs",
+    "./piper": "./dist/providers/piper.mjs",
+    "./browser": "./dist/providers/browser.mjs"
+  },
+  "scripts": {
+    "build": "obuild",
+    "dev": "vitest dev",
+    "fmt": "automd && oxlint . --fix && oxfmt .",
+    "lint": "oxlint . && oxfmt --check .",
+    "prepack": "pnpm build",
+    "voipi": "node ./src/cli.ts",
+    "release": "pnpm test && pnpm build && changelogen --release && npm publish && git push --follow-tags",
+    "test": "pnpm lint && pnpm typecheck && vitest run --coverage",
+    "typecheck": "tsgo --noEmit --skipLibCheck"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@typescript/native-preview": "latest",
+    "@vitest/coverage-v8": "latest",
+    "automd": "latest",
+    "changelogen": "latest",
+    "obuild": "latest",
+    "oxfmt": "latest",
+    "oxlint": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
+  },
+  "packageManager": "pnpm@10.29.3"
+}
