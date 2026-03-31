@@ -198,10 +198,18 @@ section + section {
 /* Demo picker */
 .demo-picker {
   display: flex;
+  flex-direction: column;
   gap: 0.4rem;
-  justify-content: flex-start;
-  flex-wrap: wrap;
   margin-top: 1.25rem;
+}
+.demo-picker-row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+.demo-picker-row:first-child select {
+  flex: 1;
+  min-width: 0;
 }
 .demo-picker select,
 .demo-picker input {
@@ -223,27 +231,37 @@ section + section {
   width: 4.5rem;
 }
 .demo-picker input[type="text"] {
-  width: 7rem;
+  min-width: 5rem;
+  max-width: 10rem;
 }
 .demo-text-row {
   margin-top: 0.75rem;
+  position: relative;
 }
-.demo-text-row input {
+.demo-text-row textarea {
   background: var(--code-bg);
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 0.3rem 0.45rem;
+  padding-bottom: 1.8rem;
   font-size: 0.72rem;
   color: var(--text);
   font-family: var(--mono);
   width: 100%;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
+  resize: vertical;
+  line-height: 1.5;
 }
-.demo-text-row input:focus {
+.demo-text-row textarea:focus {
   outline: none;
   border-color: var(--accent);
+}
+.demo-text-overlay {
+  position: absolute;
+  bottom: 0.7rem;
+  right: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  pointer-events: none;
 }
 .demo-picker select:disabled {
   opacity: 0.4;
@@ -288,6 +306,24 @@ section + section {
 }
 .bundle-size.show {
   opacity: 1;
+}
+
+/* Features */
+.features-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+.feature-tag {
+  font-size: 0.65rem;
+  font-weight: 500;
+  padding: 0.2rem 0.55rem;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
 }
 
 /* Section titles */

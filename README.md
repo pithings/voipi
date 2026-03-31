@@ -13,10 +13,11 @@
 
 Give your apps, CLIs, and agents a voice. VoiPi is a universal, zero-dependency, free text-to-speech library for JavaScript.
 
-- Pure JS, Zero deps, &lt; 50kB total install size!
+- Pure JS, Zero deps, Less than 100kB total install size and 10kB bundled providers
 - No API keys required
 - **Multiple providers:** [Browser TTS](#browser-tts), [macOS](#macos), [Edge TTS](#edge-tts), [Google TTS](#google-tts), [Piper](#piper)
 - **Auto fallback:** Picks the best available provider per platform
+- **Auto language detection:** Detects script (Arabic, Farsi, CJK, Cyrillic, etc.) and Latin-script languages (French, Spanish, German, Portuguese, etc.) — picks the best voice automatically
 
 ## Demo
 
@@ -75,6 +76,32 @@ console.log(`Duration: ${audio.duration}s`);
 
 // List available voices
 const voices = await voice.listVoices();
+```
+
+### Language Detection
+
+VoiPi automatically detects the language of input text and selects an appropriate voice. This works across all providers — no manual voice selection needed for non-English text:
+
+```ts
+await voice.speak("سلام دنیا"); // Farsi → picks a Farsi voice
+await voice.speak("مرحبا بالعالم"); // Arabic → picks an Arabic voice
+await voice.speak("こんにちは"); // Japanese → picks a Japanese voice
+await voice.speak("你好世界"); // Chinese → picks a Chinese voice
+await voice.speak("L'éducation française est très appréciée"); // French → picks a French voice
+await voice.speak("Straßenbahn und Gemütlichkeit"); // German → picks a German voice
+await voice.speak("¿Cómo estás?"); // Spanish → picks a Spanish voice
+```
+
+Detects 30+ languages: unique scripts (Arabic, Farsi, Urdu, CJK, Cyrillic, Devanagari, etc.) and Latin-script languages via diacritics analysis (French, Spanish, German, Portuguese, Turkish, Polish, Czech, Romanian, Vietnamese, and more). You can also use the detection utility directly:
+
+```ts
+import { detectLanguage } from "voipi";
+
+detectLanguage("سلام دنیا"); // "fa"
+detectLanguage("Hello world"); // "en"
+detectLanguage("こんにちは世界"); // "ja"
+detectLanguage("L'éducation française"); // "fr"
+detectLanguage("Straßenbahn"); // "de"
 ```
 
 ### Duration Estimation

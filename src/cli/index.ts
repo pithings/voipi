@@ -14,7 +14,7 @@ function usage(): void {
     console.log(`voipi - text-to-voice and voice-to-text
 
 Usage:
-  voipi speak <text> [-v|--voice <name>] [-r|--rate <n>] [-o|--output <file>] [-p|--provider <name>]
+  voipi speak <text> [-v|--voice <name>] [-l|--lang <code>] [-r|--rate <n>] [-o|--output <file>] [-p|--provider <name>]
   voipi voices [-p|--provider <name>]
   voipi --help
 
@@ -35,7 +35,7 @@ Providers: ${providerNames.map((n) => (n === "auto" ? "auto (default)" : n)).joi
 ${y}voipi${r} ${d}-${r} text-to-voice and voice-to-text
 
 ${o}Usage:${r}
-  ${y}voipi speak${r} ${d}<text>${r} ${d}[-v|--voice <name>] [-r|--rate <n>] [-o|--output <file>] [-p|--provider <name>]${r}
+  ${y}voipi speak${r} ${d}<text>${r} ${d}[-v|--voice <name>] [-l|--lang <code>] [-r|--rate <n>] [-o|--output <file>] [-p|--provider <name>]${r}
   ${y}voipi voices${r} ${d}[-p|--provider <name>]${r}
   ${y}voipi${r} ${d}--help${r}
 
@@ -85,6 +85,7 @@ const { values, positionals } = parseArgs({
   options: {
     help: { type: "boolean", short: "h" },
     voice: { type: "string", short: "v" },
+    lang: { type: "string", short: "l" },
     rate: { type: "string", short: "r" },
     output: { type: "string", short: "o" },
     provider: { type: "string", short: "p" },
@@ -126,6 +127,7 @@ async function main(): Promise<void> {
 async function speak(voipi: VoiPi, text: string): Promise<void> {
   const opts = {
     voice: values.voice,
+    lang: values.lang,
     rate: values.rate ? Number(values.rate) : undefined,
   };
 
@@ -141,6 +143,7 @@ async function speak(voipi: VoiPi, text: string): Promise<void> {
   const defaults = provider.getDefaults();
   const overrides: Record<string, string | undefined> = {};
   if (opts.voice) overrides.voice = opts.voice;
+  if (opts.lang) overrides.lang = opts.lang;
   if (opts.rate !== undefined) overrides.rate = String(opts.rate);
   if (values.output) overrides.output = values.output;
 

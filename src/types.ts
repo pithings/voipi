@@ -3,6 +3,9 @@ export interface SpeakOptions {
   /** Voice identifier or prioritized list (first available wins) */
   voice?: string | string[];
 
+  /** Language code (e.g. "en", "fr", "zh"). Overrides auto-detection */
+  lang?: string;
+
   /** Speech rate multiplier (1.0 = normal) */
   rate?: number;
 

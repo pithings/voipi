@@ -1,106 +1,5 @@
-import { estimateSpeechDuration } from 'voipi'
-
-/** @type {Record<string, { label: string, voices: { id: string, label?: string }[] }>} */
-const providers = {
-  auto: {
-    label: "Auto",
-    voices: [],
-  },
-  "edge-tts": {
-    label: "Edge TTS",
-    voices: [
-      { id: "en-US-AriaNeural" },
-      { id: "en-US-AvaNeural" },
-      { id: "en-US-AndrewNeural" },
-      { id: "en-US-EmmaNeural" },
-      { id: "en-US-BrianNeural" },
-      { id: "en-US-JennyNeural" },
-      { id: "en-US-GuyNeural" },
-      { id: "en-US-ChristopherNeural" },
-      { id: "en-US-EricNeural" },
-      { id: "en-US-MichelleNeural" },
-      { id: "en-US-RogerNeural" },
-      { id: "en-US-SteffanNeural" },
-      { id: "en-GB-LibbyNeural" },
-      { id: "en-GB-RyanNeural" },
-      { id: "en-GB-SoniaNeural" },
-      { id: "en-GB-ThomasNeural" },
-      { id: "en-AU-NatashaNeural" },
-      { id: "en-AU-WilliamMultilingualNeural" },
-      { id: "en-IN-NeerjaNeural" },
-      { id: "en-IN-PrabhatNeural" },
-      { id: "fr-FR-DeniseNeural" },
-      { id: "de-DE-KatjaNeural" },
-      { id: "es-ES-ElviraNeural" },
-      { id: "ja-JP-NanamiNeural" },
-      { id: "zh-CN-XiaoxiaoNeural" },
-    ],
-  },
-  "google-tts": {
-    label: "Google TTS",
-    voices: [
-      { id: "en" },
-      { id: "fr" },
-      { id: "de" },
-      { id: "es" },
-      { id: "it" },
-      { id: "ja" },
-      { id: "ko" },
-      { id: "pt" },
-      { id: "ru" },
-      { id: "zh-CN" },
-      { id: "ar" },
-      { id: "hi" },
-      { id: "nl" },
-      { id: "pl" },
-      { id: "tr" },
-      { id: "vi" },
-    ],
-  },
-  piper: {
-    label: "Piper",
-    voices: [
-      { id: "en_US-amy-low" },
-      { id: "en_US-amy-medium" },
-      { id: "en_US-lessac-medium" },
-      { id: "en_US-lessac-high" },
-      { id: "en_US-ryan-medium" },
-      { id: "en_US-ryan-high" },
-      { id: "en_US-joe-medium" },
-      { id: "en_US-bryce-medium" },
-      { id: "en_US-kristin-medium" },
-      { id: "en_US-ljspeech-high" },
-      { id: "en_GB-alan-medium" },
-      { id: "en_GB-alba-medium" },
-      { id: "en_GB-cori-high" },
-      { id: "en_GB-jenny_dioco-medium" },
-      { id: "de_DE-thorsten-high" },
-      { id: "fr_FR-siwis-medium", label: "fr_FR-siwis-medium" },
-      { id: "es_ES-sharvard-medium", label: "es_ES-sharvard-medium" },
-    ],
-  },
-  macos: {
-    label: "macOS",
-    voices: [
-      { id: "Samantha" },
-      { id: "Daniel" },
-      { id: "Karen" },
-      { id: "Moira" },
-      { id: "Fred" },
-      { id: "Albert" },
-      { id: "Kathy" },
-      { id: "Ralph" },
-      { id: "Whisper" },
-      { id: "Jester" },
-      { id: "Bad News" },
-      { id: "Good News" },
-      { id: "Bubbles" },
-      { id: "Zarvox" },
-      { id: "Trinoids" },
-      { id: "Junior" },
-    ],
-  },
-};
+import { estimateSpeechDuration, detectLanguage } from "voipi";
+import { providers } from "./providers.js";
 
 // --- Bundle size cache (deferred, per-subpath) ---
 const bundleSizeCache = new Map();
@@ -128,6 +27,7 @@ function initDemo() {
 
   const providerSelect = document.getElementById("demo-provider");
   const voiceSelect = document.getElementById("demo-voice");
+  const langSelect = document.getElementById("demo-lang");
   const rateInput = document.getElementById("demo-rate");
   const outputInput = document.getElementById("demo-output");
   const textInput = document.getElementById("demo-text");
@@ -141,6 +41,54 @@ function initDemo() {
     opt.value = key;
     opt.textContent = key === "auto" ? `Provider: ${label}` : label;
     providerSelect.append(opt);
+  }
+
+  // Populate language options
+  const LANGUAGES = [
+    ["auto", "Auto-detect"],
+    ["en", "English"],
+    ["ar", "Arabic"],
+    ["bn", "Bengali"],
+    ["cs", "Czech"],
+    ["da", "Danish"],
+    ["de", "German"],
+    ["el", "Greek"],
+    ["es", "Spanish"],
+    ["fa", "Farsi"],
+    ["fr", "French"],
+    ["gu", "Gujarati"],
+    ["he", "Hebrew"],
+    ["hi", "Hindi"],
+    ["hy", "Armenian"],
+    ["ja", "Japanese"],
+    ["ka", "Georgian"],
+    ["km", "Khmer"],
+    ["kn", "Kannada"],
+    ["ko", "Korean"],
+    ["ml", "Malayalam"],
+    ["my", "Myanmar"],
+    ["no", "Norwegian"],
+    ["pl", "Polish"],
+    ["pt", "Portuguese"],
+    ["ro", "Romanian"],
+    ["ru", "Russian"],
+    ["si", "Sinhala"],
+    ["sk", "Slovak"],
+    ["sv", "Swedish"],
+    ["ta", "Tamil"],
+    ["te", "Telugu"],
+    ["th", "Thai"],
+    ["tr", "Turkish"],
+    ["uk", "Ukrainian"],
+    ["ur", "Urdu"],
+    ["vi", "Vietnamese"],
+    ["zh", "Chinese"],
+  ];
+  for (const [code, name] of LANGUAGES) {
+    const opt = document.createElement("option");
+    opt.value = code;
+    opt.textContent = code === "auto" ? `Lang: ${name}` : `${name} (${code})`;
+    langSelect.append(opt);
   }
 
   function updateVoices() {
@@ -176,6 +124,7 @@ function initDemo() {
   function updateCommand() {
     const provider = providerSelect.value;
     const voice = voiceSelect.value;
+    const lang = langSelect.value;
     const rate = rateInput.value;
     const output = outputInput.value.trim();
     const text = textInput.value;
@@ -188,6 +137,7 @@ function initDemo() {
       const needsQuotes = voice.includes(" ");
       flags += ` -v ${needsQuotes ? `"${voice}"` : voice}`;
     }
+    if (lang && lang !== "auto") flags += ` -l ${lang}`;
     if (rate) flags += ` -r ${rate}`;
     if (output) flags += ` -o ${output}`;
     const codeEl = installEl.querySelector("code");
@@ -200,6 +150,7 @@ function initDemo() {
     const ctorStr = ctorParts.length ? `{ ${ctorParts.join(", ")} }` : "";
 
     const callParts = [];
+    if (lang && lang !== "auto") callParts.push(`${hl("var", "lang")}: ${hl("str", `"${lang}"`)}`);
     if (rate) callParts.push(`${hl("var", "rate")}: ${hl("var", rate)}`);
     const callStr = callParts.length ? `, { ${callParts.join(", ")} }` : "";
 
@@ -241,6 +192,7 @@ function initDemo() {
   }
 
   const durationEl = document.getElementById("demo-duration");
+  const langEl = document.getElementById("demo-detected-lang");
 
   function updateDuration() {
     const text = textInput.value;
@@ -253,13 +205,27 @@ function initDemo() {
     } else {
       durationEl.classList.remove("show");
     }
+    const lang = detectLanguage(text);
+    if (text.trim() && lang) {
+      langEl.textContent = lang;
+      langEl.classList.add("show");
+    } else {
+      langEl.classList.remove("show");
+    }
   }
 
   providerSelect.addEventListener("change", updateVoices);
   voiceSelect.addEventListener("change", updateCommand);
-  rateInput.addEventListener("input", () => { updateCommand(); updateDuration(); });
+  langSelect.addEventListener("change", updateCommand);
+  rateInput.addEventListener("input", () => {
+    updateCommand();
+    updateDuration();
+  });
   outputInput.addEventListener("input", updateCommand);
-  textInput.addEventListener("input", () => { updateCommand(); updateDuration(); });
+  textInput.addEventListener("input", () => {
+    updateCommand();
+    updateDuration();
+  });
   providerSelect.value = "edge-tts";
   updateVoices();
   updateDuration();

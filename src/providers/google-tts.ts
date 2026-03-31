@@ -3,6 +3,7 @@
 
 import type { SpeakOptions, Voice } from "../types.ts";
 import { BaseVoiceProvider, type AudioData } from "../_provider.ts";
+import { detectLanguage } from "../_lang.ts";
 import { resolveVoice } from "../_utils.ts";
 
 export interface GoogleTTSOptions {
@@ -28,9 +29,17 @@ export class GoogleTTS extends BaseVoiceProvider {
     this.slow = options?.slow ?? false;
   }
 
+  defaultVoiceForLanguage(lang: string): string | undefined {
+    // Google TTS uses "zh-CN" not "zh"
+    const code = lang === "zh" ? "zh-CN" : lang;
+    return LANG_SET.has(code) ? code : undefined;
+  }
+
   override async synthesize(text: string, speakOpts?: SpeakOptions): Promise<AudioData> {
     const lang =
-      (await resolveVoice(speakOpts?.voice, () => this.listVoices())) ?? this.defaultLang;
+      (await resolveVoice(speakOpts?.voice, () => this.listVoices())) ??
+      this.defaultVoiceForLanguage(speakOpts?.lang ?? detectLanguage(text)) ??
+      this.defaultLang;
     const slow = speakOpts?.rate != null ? speakOpts.rate < 0.75 : this.slow;
 
     const data = await synthesize(text, lang, slow);
@@ -164,3 +173,5 @@ const LANGUAGES: [code: string, name: string][] = [
   ["zh-CN", "Chinese (Simplified)"],
   ["zh-TW", "Chinese (Traditional)"],
 ];
+
+const LANG_SET = new Set(LANGUAGES.map((l) => l[0]));

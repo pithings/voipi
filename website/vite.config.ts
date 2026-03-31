@@ -6,9 +6,4 @@ export default defineConfig({
   plugins: [
     // nitro()
   ],
-  resolve: {
-    alias: {
-      "voipi/browser": "../src/providers/browser.ts",
-    },
-  },
 });

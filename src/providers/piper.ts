@@ -1,5 +1,6 @@
 import type { SpeakOptions, Voice } from "../types.ts";
 import { BaseVoiceProvider, type AudioData } from "../_provider.ts";
+import { detectLanguage } from "../_lang.ts";
 import { getNodeBuiltin, resolveVoice } from "../_utils.ts";
 
 export interface PiperOptions {
@@ -34,9 +35,15 @@ export class Piper extends BaseVoiceProvider {
     this.speaker = options?.speaker ?? 0;
   }
 
+  defaultVoiceForLanguage(lang: string): string | undefined {
+    return LANG_VOICES[lang];
+  }
+
   override async synthesize(text: string, speakOpts?: SpeakOptions): Promise<AudioData> {
     const voiceId =
-      (await resolveVoice(speakOpts?.voice, () => this.listVoices())) ?? this.defaultVoice;
+      (await resolveVoice(speakOpts?.voice, () => this.listVoices())) ??
+      this.defaultVoiceForLanguage(speakOpts?.lang ?? detectLanguage(text)) ??
+      this.defaultVoice;
 
     const piper = await ensurePiper();
     const modelPath = await ensureVoice(voiceId);
@@ -62,6 +69,37 @@ export class Piper extends BaseVoiceProvider {
 }
 
 // ---- internals ----
+
+const LANG_VOICES: Record<string, string> = {
+  ar: "ar_JO-kareem-medium",
+  bn: "bn_BD-kazol-medium",
+  cs: "cs_CZ-jirka-medium",
+  da: "da_DK-talesyntese-medium",
+  de: "de_DE-thorsten-medium",
+  el: "el_GR-rapunzel-low",
+  es: "es_ES-sharvard-medium",
+  fa: "fa_IR-amir-medium",
+  fr: "fr_FR-siwis-medium",
+  hi: "hi_IN-madhu-medium",
+  ja: "ja_JP-takumi-medium",
+  ka: "ka_GE-natia-medium",
+  kn: "kn_IN-alpha-low",
+  ko: "ko_KR-kagayaki-medium",
+  my: "my_MM-google-medium",
+  no: "no_NO-talesyntese-medium",
+  pl: "pl_PL-gosia-medium",
+  pt: "pt_BR-faber-medium",
+  ro: "ro_RO-mihai-medium",
+  ru: "ru_RU-irina-medium",
+  sk: "sk_SK-lili-medium",
+  sv: "sv_SE-nst-medium",
+  te: "te_IN-cmu_indic-medium",
+  th: "th_TH-google-medium",
+  tr: "tr_TR-dfki-medium",
+  uk: "uk_UA-lada-medium",
+  vi: "vi_VN-vivos-x_low",
+  zh: "zh_CN-huayan-medium",
+};
 
 /** Resolved piper command: either a binary path or ["python3", "-m", "piper"] */
 interface PiperCmd {

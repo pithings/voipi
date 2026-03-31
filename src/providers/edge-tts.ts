@@ -3,6 +3,7 @@
 
 import type { SpeakOptions, Voice } from "../types.ts";
 import { BaseVoiceProvider, type AudioData } from "../_provider.ts";
+import { detectLanguage } from "../_lang.ts";
 import { resolveVoice } from "../_utils.ts";
 import { WebSocket } from "../_ws.ts";
 
@@ -46,9 +47,14 @@ export class EdgeTTS extends BaseVoiceProvider {
     this.outputFormat = options?.outputFormat ?? "audio-24khz-48kbitrate-mono-mp3";
   }
 
+  defaultVoiceForLanguage(lang: string): string | undefined {
+    return LANG_VOICES[lang];
+  }
+
   override async synthesize(text: string, speakOpts?: SpeakOptions): Promise<AudioData> {
     const voice =
       (await resolveVoice(speakOpts?.voice, () => this.listVoices(), (id) => this.hasVoice(id))) ??
+      this.defaultVoiceForLanguage(speakOpts?.lang ?? detectLanguage(text)) ??
       this.defaultVoice;
     const rate = speakOpts?.rate != null ? rateToString(speakOpts.rate) : this.defaultRate;
 
@@ -79,6 +85,41 @@ export class EdgeTTS extends BaseVoiceProvider {
 }
 
 // ---- internals ----
+
+const LANG_VOICES: Record<string, string> = {
+  ar: "ar-SA-HamedNeural",
+  bn: "bn-IN-TanishaaNeural",
+  cs: "cs-CZ-VlastaNeural",
+  da: "da-DK-ChristelNeural",
+  de: "de-DE-KatjaNeural",
+  el: "el-GR-AthinaNeural",
+  es: "es-ES-ElviraNeural",
+  fa: "fa-IR-DilaraNeural",
+  fr: "fr-FR-DeniseNeural",
+  gu: "gu-IN-DhwaniNeural",
+  he: "he-IL-HilaNeural",
+  hi: "hi-IN-SwaraNeural",
+  ja: "ja-JP-NanamiNeural",
+  km: "km-KH-SreymomNeural",
+  kn: "kn-IN-SapnaNeural",
+  ko: "ko-KR-SunHiNeural",
+  ml: "ml-IN-SobhanaNeural",
+  my: "my-MM-NilarNeural",
+  no: "nb-NO-PernilleNeural",
+  pl: "pl-PL-AgnieszkaNeural",
+  pt: "pt-BR-FranciscaNeural",
+  ro: "ro-RO-AlinaNeural",
+  ru: "ru-RU-SvetlanaNeural",
+  sk: "sk-SK-ViktoriaNeural",
+  sv: "sv-SE-SofieNeural",
+  ta: "ta-IN-PallaviNeural",
+  te: "te-IN-ShrutiNeural",
+  th: "th-TH-PremwadeeNeural",
+  tr: "tr-TR-EmelNeural",
+  ur: "ur-PK-UzmaNeural",
+  vi: "vi-VN-HoaiMyNeural",
+  zh: "zh-CN-XiaoxiaoNeural",
+};
 
 export const TRUSTED_CLIENT_TOKEN = "6A5AA1D4EAFF4E9FB37E23D68491D6F4";
 export const CHROMIUM_FULL_VERSION = "143.0.3650.75";

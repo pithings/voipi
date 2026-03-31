@@ -1,5 +1,6 @@
 import type { SpeakOptions, Voice } from "../types.ts";
 import { BaseVoiceProvider, type AudioData } from "../_provider.ts";
+import { detectLanguage } from "../_lang.ts";
 import { exec, getNodeBuiltin, resolveVoice } from "../_utils.ts";
 
 export interface MacOSOptions {
@@ -78,14 +79,19 @@ export class MacOS extends BaseVoiceProvider {
     }
   }
 
+  defaultVoiceForLanguage(lang: string): string | undefined {
+    return LANG_VOICES[lang];
+  }
+
   private async _say(text: string, options?: SpeakOptions, extraArgs?: string[]): Promise<void> {
     const args: string[] = [];
 
-    const voice = await resolveVoice(
-      options?.voice ?? this._defaults.voice,
-      () => this.listVoices(),
-      (id) => this.hasVoice(id),
-    );
+    const voice =
+      (await resolveVoice(
+        options?.voice ?? this._defaults.voice,
+        () => this.listVoices(),
+        (id) => this.hasVoice(id),
+      )) ?? this.defaultVoiceForLanguage(options?.lang ?? detectLanguage(text));
     if (voice) {
       args.push("-v", voice);
     }
@@ -123,6 +129,29 @@ export class MacOS extends BaseVoiceProvider {
 }
 
 // ---- internals ----
+
+const LANG_VOICES: Record<string, string> = {
+  ar: "Maged",
+  cs: "Zuzana",
+  da: "Sara",
+  de: "Anna",
+  es: "Monica",
+  fr: "Thomas",
+  he: "Carmit",
+  hi: "Lekha",
+  ja: "Kyoko",
+  ko: "Yuna",
+  no: "Nora",
+  pl: "Zosia",
+  pt: "Luciana",
+  ro: "Ioana",
+  ru: "Milena",
+  sk: "Laura",
+  sv: "Alva",
+  tr: "Yelda",
+  vi: "Linh",
+  zh: "Ting-Ting",
+};
 
 const _extToFormat: Record<string, { fileFormat: string; dataFormat: string }> = {
   ".aiff": { fileFormat: "AIFF", dataFormat: "BEI16" },
