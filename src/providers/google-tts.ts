@@ -6,8 +6,8 @@ import { BaseVoiceProvider, type AudioData } from "../_provider.ts";
 import { resolveVoice } from "../_utils.ts";
 
 export interface GoogleTTSOptions {
-  /** Default language code (e.g. "en", "fr", "de"). Default: "en" */
-  lang?: string;
+  /** Default voice/language code (e.g. "en", "fr", "de"). Default: "en" */
+  voice?: string;
   /** Slow speech mode. Default: false */
   slow?: boolean;
 }
@@ -24,7 +24,7 @@ export class GoogleTTS extends BaseVoiceProvider {
 
   constructor(options?: GoogleTTSOptions) {
     super();
-    this.defaultLang = options?.lang ?? "en";
+    this.defaultLang = options?.voice ?? "en";
     this.slow = options?.slow ?? false;
   }
 

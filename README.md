@@ -152,11 +152,11 @@ Cross-platform online TTS using Google Translate's speech endpoint. 55+ language
 ```ts
 import { GoogleTTS } from "voipi/google-tts";
 
-const voice = new GoogleTTS({ lang: "en" });
+const voice = new GoogleTTS({ voice: "en" });
 await voice.speak("Hello world!");
 
 // Different language
-const fr = new GoogleTTS({ lang: "fr" });
+const fr = new GoogleTTS({ voice: "fr" });
 await fr.speak("Bonjour le monde!");
 ```
 
