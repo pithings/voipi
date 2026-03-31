@@ -21,17 +21,10 @@ Give your apps, CLIs, and agents a voice. VoiPi is a universal, zero-dependency,
 ## Demo
 
 <p align="center">
-  <img src="demo.svg" alt="voipi demo" width="600">
+  <img src="./website/demo.svg" alt="voipi demo" width="600">
 </p>
 
-## Samples
-
-| Provider   | Sample |
-| ---------- | ------ |
-| macOS      | <video src="https://github.com/pithings/voipi/raw/main/samples/macos.mp4" controls preload="metadata"></video> |
-| Piper      | <video src="https://github.com/pithings/voipi/raw/main/samples/piper.mp4" controls preload="metadata"></video> |
-| Edge TTS   | <video src="https://github.com/pithings/voipi/raw/main/samples/edge-tts.mp4" controls preload="metadata"></video> |
-| Google TTS | <video src="https://github.com/pithings/voipi/raw/main/samples/google-tts.mp4" controls preload="metadata"></video> |
+<a href="https://voipi.vercel.app/"><img src="https://img.shields.io/badge/%F0%9F%94%8A_Listen_to_Samples-voipi.vercel.app-blue?style=for-the-badge" alt="Listen to Samples" /></a>
 
 ## CLI
 

@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>voipi — Universal Text-to-Speech for JavaScript</title>
+    <meta
+      name="description"
+      content="Give your apps, CLIs, and agents a voice. Zero-dependency, free text-to-speech library for JavaScript."
+    />
+    <style>
+      :root {
+        --bg: #0a0a0a;
+        --surface: #141414;
+        --border: #262626;
+        --text: #e5e5e5;
+        --text-muted: #737373;
+        --accent: #facc15;
+        --accent-dim: #a3891a;
+        --code-bg: #1a1a1a;
+        --radius: 10px;
+        --mono: "SF Mono", "Cascadia Code", "Fira Code", ui-monospace, monospace;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+
+      /* Layout */
+      .container {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+      }
+      section {
+        padding: 3rem 0;
+      }
+      section + section {
+        border-top: 1px solid var(--border);
+      }
+
+      /* Hero */
+      .hero {
+        padding: 4rem 0 3rem;
+        text-align: center;
+      }
+      .hero-logo {
+        height: 80px;
+        margin-bottom: 1.25rem;
+      }
+      .hero h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin-bottom: 0.75rem;
+      }
+      .hero p {
+        font-size: 1.125rem;
+        color: var(--text-muted);
+        max-width: 480px;
+        margin: 0 auto 1.5rem;
+      }
+      .hero-badges {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+      }
+      .hero-badges img {
+        height: 22px;
+      }
+      .hero-actions {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.55rem 1.2rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: opacity 0.15s;
+      }
+      .btn:hover {
+        text-decoration: none;
+        opacity: 0.85;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: #0a0a0a;
+      }
+      .btn-outline {
+        border: 1px solid var(--border);
+        color: var(--text);
+      }
+
+      /* Features */
+      .features {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+      }
+      .feature {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.25rem;
+      }
+      .feature-icon {
+        font-size: 1.25rem;
+        margin-bottom: 0.4rem;
+      }
+      .feature h3 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+      .feature p {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+
+      /* Install bar */
+      .install {
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 0.75rem 1rem;
+        font-family: var(--mono);
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+        user-select: all;
+      }
+      .install code {
+        color: var(--text);
+      }
+      .install .prefix {
+        color: var(--text-muted);
+      }
+
+      /* Section titles */
+      .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1.25rem;
+        letter-spacing: -0.01em;
+      }
+
+      /* Code blocks */
+      pre {
+        background: var(--code-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1rem 1.25rem;
+        overflow-x: auto;
+        font-size: 0.8rem;
+        line-height: 1.7;
+        font-family: var(--mono);
+        color: var(--text-muted);
+      }
+      pre .kw {
+        color: #c084fc;
+      }
+      pre .str {
+        color: #86efac;
+      }
+      pre .cmt {
+        color: #525252;
+      }
+      pre .fn {
+        color: #93c5fd;
+      }
+      pre .var {
+        color: #e5e5e5;
+      }
+      pre .op {
+        color: #737373;
+      }
+
+      /* Samples */
+      .samples-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .sample {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1rem 1.25rem;
+      }
+      .sample-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.6rem;
+      }
+      .sample-name {
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+      .sample-tag {
+        font-size: 0.65rem;
+        font-weight: 500;
+        padding: 0.15rem 0.45rem;
+        border-radius: 4px;
+        background: var(--border);
+        color: var(--text-muted);
+      }
+      .sample audio {
+        width: 100%;
+        height: 36px;
+      }
+
+      /* Providers */
+      .providers-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+      }
+      .provider {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.25rem;
+      }
+      .provider h3 {
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+      .provider .provider-meta {
+        font-size: 0.75rem;
+        color: var(--accent-dim);
+        margin-bottom: 0.4rem;
+      }
+      .provider p {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+
+      /* CLI */
+      .cli-examples {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .cli-examples pre {
+        margin: 0;
+      }
+
+      /* Demo SVG */
+      .demo-wrap {
+        margin-top: 1.5rem;
+        text-align: center;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 1.25rem;
+        overflow: hidden;
+      }
+      .demo-wrap img {
+        width: 100%;
+        max-width: 560px;
+        border-radius: 6px;
+      }
+
+      /* Footer */
+      footer {
+        padding: 2rem 0;
+        text-align: center;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        border-top: 1px solid var(--border);
+      }
+      footer a {
+        color: var(--text-muted);
+      }
+      footer a:hover {
+        color: var(--accent);
+      }
+
+      @media (max-width: 540px) {
+        .hero h1 {
+          font-size: 1.75rem;
+        }
+        .features,
+        .providers-grid {
+          grid-template-columns: 1fr;
+        }
+        section {
+          padding: 2rem 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Hero -->
+    <div class="container">
+      <section class="hero">
+        <img
+          src="https://raw.githubusercontent.com/pithings/voipi/main/logo.svg"
+          alt="voipi"
+          class="hero-logo"
+        />
+        <h1>voipi</h1>
+        <p>
+          Give your apps, CLIs, and agents a voice. Universal, zero-dependency, free text-to-speech
+          for JavaScript.
+        </p>
+        <div class="hero-badges">
+          <a href="https://npmx.dev/package/voipi"
+            ><img
+              src="https://img.shields.io/npm/v/voipi?color=facc15&labelColor=1a1a1a&style=flat-square"
+              alt="npm version"
+          /></a>
+          <a href="https://npm.chart.dev/voipi"
+            ><img
+              src="https://img.shields.io/npm/dm/voipi?color=facc15&labelColor=1a1a1a&style=flat-square"
+              alt="npm downloads"
+          /></a>
+        </div>
+        <div class="hero-actions">
+          <a href="https://github.com/pithings/voipi" class="btn btn-primary">GitHub</a>
+          <a href="#samples" class="btn btn-outline">Listen to samples</a>
+          <a href="https://npmx.dev/package/voipi" class="btn btn-outline">npm</a>
+        </div>
+      </section>
+    </div>
+
+    <!-- Features -->
+    <div class="container">
+      <section>
+        <div class="features">
+          <div class="feature">
+            <div class="feature-icon">0</div>
+            <h3>Zero Dependencies</h3>
+            <p>Pure JS, under 50kB total install size. Nothing extra to install.</p>
+          </div>
+          <div class="feature">
+            <div class="feature-icon">&mdash;</div>
+            <h3>No API Keys</h3>
+            <p>Works out of the box. No accounts, no tokens, no config.</p>
+          </div>
+          <div class="feature">
+            <div class="feature-icon">5</div>
+            <h3>Multiple Providers</h3>
+            <p>
+              Browser TTS, macOS, Edge TTS, Google TTS, and Piper &mdash; pick one or let voipi
+              choose.
+            </p>
+          </div>
+          <div class="feature">
+            <div class="feature-icon">&darr;</div>
+            <h3>Auto Fallback</h3>
+            <p>Automatically picks the best available provider for the current platform.</p>
+          </div>
+        </div>
+        <div class="install">
+          <code><span class="prefix">$</span> npx voipi "Hello world"</code>
+        </div>
+      </section>
+    </div>
+
+    <!-- Demo -->
+    <div class="container">
+      <section>
+        <h2 class="section-title">Demo</h2>
+        <div class="demo-wrap">
+          <img src="./demo.svg" alt="voipi CLI demo" />
+        </div>
+      </section>
+    </div>
+
+    <!-- Samples -->
+    <div class="container">
+      <section id="samples">
+        <h2 class="section-title">Samples</h2>
+        <div class="samples-grid">
+          <div class="sample">
+            <div class="sample-header">
+              <span class="sample-name">macOS</span>
+              <span class="sample-tag">Native</span>
+            </div>
+            <audio controls preload="metadata" src="./samples/macos.mp4"></audio>
+          </div>
+          <div class="sample">
+            <div class="sample-header">
+              <span class="sample-name">Piper</span>
+              <span class="sample-tag">Offline Neural</span>
+            </div>
+            <audio controls preload="metadata" src="./samples/piper.mp4"></audio>
+          </div>
+          <div class="sample">
+            <div class="sample-header">
+              <span class="sample-name">Edge TTS</span>
+              <span class="sample-tag">322+ voices</span>
+            </div>
+            <audio controls preload="metadata" src="./samples/edge-tts.mp4"></audio>
+          </div>
+          <div class="sample">
+            <div class="sample-header">
+              <span class="sample-name">Google TTS</span>
+              <span class="sample-tag">55+ languages</span>
+            </div>
+            <audio controls preload="metadata" src="./samples/google-tts.mp4"></audio>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- CLI -->
+    <div class="container">
+      <section>
+        <h2 class="section-title">CLI</h2>
+        <div class="cli-examples">
+          <pre><span class="cmt"># Speak text (auto-selects best provider)</span>
+<span class="var">$</span> npx voipi <span class="str">"The quick brown fox jumps over the lazy dog"</span>
+
+<span class="cmt"># Choose a specific voice and speed</span>
+<span class="var">$</span> npx voipi <span class="str">"Hi"</span> <span class="op">-v</span> en-US-BrianNeural <span class="op">-r</span> 1.5
+
+<span class="cmt"># Save to file instead of playing</span>
+<span class="var">$</span> npx voipi speak <span class="str">"Hi"</span> <span class="op">-o</span> hello.mp3
+
+<span class="cmt"># Use a specific provider</span>
+<span class="var">$</span> npx voipi speak <span class="str">"Bonjour"</span> <span class="op">-p</span> google-tts <span class="op">-v</span> fr
+
+<span class="cmt"># List available voices</span>
+<span class="var">$</span> npx voipi voices</pre>
+        </div>
+      </section>
+    </div>
+
+    <!-- Programmatic Usage -->
+    <div class="container">
+      <section>
+        <h2 class="section-title">Programmatic Usage</h2>
+        <pre><span class="kw">import</span> <span class="op">{</span> <span class="var">VoiPi</span> <span class="op">}</span> <span class="kw">from</span> <span class="str">"voipi"</span><span class="op">;</span>
+
+<span class="kw">const</span> <span class="var">voice</span> <span class="op">=</span> <span class="kw">new</span> <span class="fn">VoiPi</span><span class="op">();</span>
+
+<span class="cmt">// Speak text</span>
+<span class="kw">await</span> <span class="var">voice</span>.<span class="fn">speak</span><span class="op">(</span><span class="str">"Hello world!"</span><span class="op">);</span>
+
+<span class="cmt">// With a prioritized voice list (first available wins)</span>
+<span class="kw">await</span> <span class="var">voice</span>.<span class="fn">speak</span><span class="op">(</span><span class="str">"Hello!"</span><span class="op">,</span> <span class="op">{</span> <span class="var">voice</span><span class="op">:</span> <span class="op">[</span><span class="str">"Samantha"</span><span class="op">,</span> <span class="str">"en-US-AriaNeural"</span><span class="op">],</span> <span class="var">rate</span><span class="op">:</span> <span class="var">1.5</span> <span class="op">});</span>
+
+<span class="cmt">// Save to file</span>
+<span class="kw">await</span> <span class="var">voice</span>.<span class="fn">save</span><span class="op">(</span><span class="str">"Hello!"</span><span class="op">,</span> <span class="str">"output.mp3"</span><span class="op">);</span>
+
+<span class="cmt">// Get audio data with duration</span>
+<span class="kw">const</span> <span class="var">audio</span> <span class="op">=</span> <span class="kw">await</span> <span class="var">voice</span>.<span class="fn">toAudio</span><span class="op">(</span><span class="str">"Hello world!"</span><span class="op">);</span>
+<span class="var">console</span>.<span class="fn">log</span><span class="op">(</span><span class="str">`Duration: <span class="op">${</span><span class="var">audio</span>.<span class="var">duration</span><span class="op">}</span>s`</span><span class="op">);</span></pre>
+      </section>
+    </div>
+
+    <!-- Providers -->
+    <div class="container">
+      <section>
+        <h2 class="section-title">Providers</h2>
+        <div class="providers-grid">
+          <div class="provider">
+            <h3>macOS</h3>
+            <div class="provider-meta">Native &middot; Offline</div>
+            <p>Uses the native <code>say</code> command. Instant, no downloads. macOS only.</p>
+          </div>
+          <div class="provider">
+            <h3>Edge TTS</h3>
+            <div class="provider-meta">Online &middot; 322+ voices</div>
+            <p>
+              Microsoft Edge's neural speech service. High-quality voices with rate, pitch, and
+              volume control.
+            </p>
+          </div>
+          <div class="provider">
+            <h3>Google TTS</h3>
+            <div class="provider-meta">Online &middot; 55+ languages</div>
+            <p>Google Translate's speech endpoint. Zero config, wide language support.</p>
+          </div>
+          <div class="provider">
+            <h3>Piper</h3>
+            <div class="provider-meta">Local Neural &middot; 40+ languages</div>
+            <p>
+              Offline neural TTS. Auto-downloads models from HuggingFace. Fully offline after first
+              run.
+            </p>
+          </div>
+          <div class="provider">
+            <h3>Browser TTS</h3>
+            <div class="provider-meta">Web Speech API</div>
+            <p>
+              Built-in browser synthesis. No audio file output &mdash; speaks directly. Varies by
+              browser/OS.
+            </p>
+          </div>
+          <div class="provider">
+            <h3>Auto (VoiPi)</h3>
+            <div class="provider-meta">Default &middot; Fallback chain</div>
+            <p>
+              Automatically picks the best provider: macOS &rarr; Piper &rarr; Edge TTS &rarr;
+              Google TTS.
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <div class="container">
+        <p>
+          <a href="https://github.com/pithings/voipi">GitHub</a>
+          &nbsp;&middot;&nbsp;
+          <a href="https://npmx.dev/package/voipi">npm</a>
+          &nbsp;&middot;&nbsp; Published under
+          <a href="https://github.com/unjs/voipi/blob/main/LICENSE">MIT</a>
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      document.querySelectorAll("audio").forEach((audio) => {
+        audio.addEventListener("play", () => {
+          document.querySelectorAll("audio").forEach((other) => {
+            if (other !== audio) other.pause();
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

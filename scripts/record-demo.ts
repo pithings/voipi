@@ -9,8 +9,8 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 const ROOT = new URL("..", import.meta.url).pathname;
-const CAST_FILE = join(ROOT, "demo.cast");
-const SVG_FILE = join(ROOT, "demo.svg");
+const CAST_FILE = join(ROOT, "website/demo.cast");
+const SVG_FILE = join(ROOT, "website/demo.svg");
 
 // --- Step 1: Record with asciinema ---
 
