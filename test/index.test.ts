@@ -55,12 +55,15 @@ describe("voipi", () => {
         const audio = await provider.synthesize("hi");
         const headers = MAGIC_HEADERS[name]!;
         const matches = headers.some((h) =>
-          h.bytes.every((b, i) => ((audio.data[i]!) & (h.mask?.[i] ?? 0xff)) === b),
+          h.bytes.every((b, i) => (audio.data[i]! & (h.mask?.[i] ?? 0xff)) === b),
         );
         const actual = [...audio.data.subarray(0, 4)]
           .map((b) => b.toString(16).padStart(2, "0"))
           .join(" ");
-        expect(matches, `expected ${headers.map((h) => h.label).join(" or ")}, got [${actual}]`).toBe(true);
+        expect(
+          matches,
+          `expected ${headers.map((h) => h.label).join(" or ")}, got [${actual}]`,
+        ).toBe(true);
       });
     });
   }
