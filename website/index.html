@@ -293,7 +293,9 @@
         background: rgba(0, 0, 0, 0.55);
         border-radius: 50%;
         pointer-events: none;
-        transition: opacity 0.15s, transform 0.15s;
+        transition:
+          opacity 0.15s,
+          transform 0.15s;
       }
       .demo-wrap::before {
         content: "";
@@ -323,9 +325,15 @@
         animation: pulse 0.6s ease-in-out;
       }
       @keyframes pulse {
-        0% { transform: scale(1); }
-        30% { transform: scale(1.04); }
-        100% { transform: scale(1); }
+        0% {
+          transform: scale(1);
+        }
+        30% {
+          transform: scale(1.04);
+        }
+        100% {
+          transform: scale(1);
+        }
       }
 
       /* Footer */
@@ -555,7 +563,9 @@
       var demoImg = demoWrap.querySelector("img");
       demoWrap.addEventListener("click", function () {
         var audios = document.querySelectorAll("audio");
-        audios.forEach(function (a) { a.pause(); });
+        audios.forEach(function (a) {
+          a.pause();
+        });
         var pick = audios[Math.floor(Math.random() * audios.length)];
         pick.currentTime = 0;
         pick.play();
