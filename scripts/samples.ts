@@ -1,10 +1,11 @@
 #!/usr/bin/env node
-// Generates audio samples for each provider
+// Generates audio samples for each provider and converts to mp4 for GitHub README playback
 // Usage: ./scripts/samples.ts
-// Output: samples/<provider>.<ext>
+// Output: samples/<provider>.mp4
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
+import { execSync } from "node:child_process";
 import { providerMap } from "../src/voipi.ts";
 
 const ROOT = new URL("..", import.meta.url).pathname;
@@ -25,10 +26,21 @@ for (const name of PROVIDERS) {
     const provider = await factory();
     const audio = await provider.toAudio(TEXT);
     const ext = (audio.ext || ".wav").replace(/^\.?/, ".");
-    const outPath = join(SAMPLES_DIR, `${name}${ext}`);
-    writeFileSync(outPath, audio.data);
+    const tmpPath = join(SAMPLES_DIR, `${name}${ext}`);
+    const mp4Path = join(SAMPLES_DIR, `${name}.mp4`);
+
+    writeFileSync(tmpPath, audio.data);
+
+    // Convert to mp4 (silent video + audio) for GitHub README inline playback
+    console.log(`[${name}] Converting to mp4...`);
+    execSync(
+      `ffmpeg -y -f lavfi -i color=c=black:s=2x2:r=1 -i ${tmpPath} -shortest -c:v libx264 -tune stillimage -c:a aac -b:a 64k -ac 1 ${mp4Path}`,
+      { stdio: "pipe" },
+    );
+
+    unlinkSync(tmpPath);
     const duration = audio.duration ? ` (${audio.duration.toFixed(1)}s)` : "";
-    console.log(`[${name}] Saved: samples/${name}${ext}${duration}`);
+    console.log(`[${name}] Saved: samples/${name}.mp4${duration}`);
   } catch (error) {
     console.error(`[${name}] Failed: ${(error as Error).message}`);
   }

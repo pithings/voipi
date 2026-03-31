@@ -26,12 +26,12 @@ Give your apps, CLIs, and agents a voice. VoiPi is a universal, zero-dependency,
 
 ## Samples
 
-| Provider   | Sample                                                                   |
-| ---------- | ------------------------------------------------------------------------ |
-| macOS      | <video src="samples/macos.aiff" controls preload="metadata"></video>     |
-| Piper      | <video src="samples/piper.wav" controls preload="metadata"></video>      |
-| Edge TTS   | <video src="samples/edge-tts.mp3" controls preload="metadata"></video>   |
-| Google TTS | <video src="samples/google-tts.mp3" controls preload="metadata"></video> |
+| Provider   | Sample |
+| ---------- | ------ |
+| macOS      | <video src="https://github.com/pithings/voipi/raw/main/samples/macos.mp4" controls preload="metadata"></video> |
+| Piper      | <video src="https://github.com/pithings/voipi/raw/main/samples/piper.mp4" controls preload="metadata"></video> |
+| Edge TTS   | <video src="https://github.com/pithings/voipi/raw/main/samples/edge-tts.mp4" controls preload="metadata"></video> |
+| Google TTS | <video src="https://github.com/pithings/voipi/raw/main/samples/google-tts.mp4" controls preload="metadata"></video> |
 
 ## CLI
 
