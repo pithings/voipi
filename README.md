@@ -1,4 +1,8 @@
-# 🔊 voipi
+<p align="center">
+  <img src="logo.svg" alt="voipi" width="128" height="128">
+</p>
+
+<h1 align="center">voipi</h1>
 
 <!-- automd:badges color=yellow -->
 
@@ -7,13 +11,11 @@
 
 <!-- /automd -->
 
-Give your apps, CLIs, and Agents a voice.
-
-VoiPi is a universal text-to-speech library for JavaScript that works across Node.js, Bun, browsers, and the CLI with zero dependencies.
+Give your apps, CLIs, and agents a voice. VoiPi is a universal, zero-dependency, free text-to-speech library for JavaScript.
 
 - Pure JS, Zero deps, &lt; 50kB total install size!
 - No API keys required
-- **Multiple providers:** [Browser TTS](#browser-tts), [MacOS](#macos), [Edge TTS](#edge-tts), [Google TTS](#google-tts), Piper
+- **Multiple providers:** [Browser TTS](#browser-tts), [macOS](#macos), [Edge TTS](#edge-tts), [Google TTS](#google-tts), [Piper](#piper)
 - **Auto fallback:** Picks the best available provider per platform
 
 ## CLI
@@ -113,6 +115,24 @@ await voice.speak("Hello world!");
 // Different language
 const fr = new GoogleTTS({ lang: "fr" });
 await fr.speak("Bonjour le monde!");
+```
+
+### Piper
+
+Local neural TTS powered by [Piper](https://github.com/rhasspy/piper). 40+ languages, fully offline after first download. Auto-installs the Piper binary (Linux) or pip package (macOS/Windows) and downloads ONNX voice models on demand.
+
+```ts
+import { Piper } from "voipi/piper";
+
+const voice = new Piper();
+await voice.speak("Hello world!");
+
+// Custom voice, speed, and speaker
+const voice2 = new Piper({ voice: "en_US-lessac-medium", lengthScale: 0.8, speaker: 0 });
+await voice2.speak("Hello!");
+
+// List all available voices
+const voices = await voice.listVoices();
 ```
 
 ### Browser TTS

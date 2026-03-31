@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- Speech bubble body -->
+  <rect x="12" y="16" width="104" height="72" rx="20" ry="20" fill="#FFD93D"/>
+  <!-- Speech bubble tail -->
+  <polygon points="32,88 48,88 38,108" fill="#FFD93D"/>
+
+  <!-- Cute face - eyes -->
+  <circle cx="44" cy="48" r="6" fill="#2D2D2D"/>
+  <circle cx="84" cy="48" r="6" fill="#2D2D2D"/>
+  <!-- Eye highlights -->
+  <circle cx="46" cy="46" r="2" fill="#FFF"/>
+  <circle cx="86" cy="46" r="2" fill="#FFF"/>
+
+  <!-- Happy mouth -->
+  <path d="M50,62 Q64,76 78,62" stroke="#2D2D2D" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+  <!-- Blush -->
+  <ellipse cx="36" cy="60" rx="6" ry="4" fill="#FF9B9B" opacity="0.5"/>
+  <ellipse cx="92" cy="60" rx="6" ry="4" fill="#FF9B9B" opacity="0.5"/>
+
+  <!-- Sound waves -->
+  <path d="M108,40 Q116,52 108,64" stroke="#FF6B35" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <path d="M116,34 Q128,52 116,70" stroke="#FF6B35" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.6"/>
+</svg>
