@@ -207,11 +207,18 @@ function initDemo() {
       `${hl("kw", "const")} ${hl("var", "tts")} ${hl("op", "=")} ${hl("kw", "new")} ${hl("fn", cls)}${hl("op", "(")}${ctorStr}${hl("op", ");")}`,
     ];
     if (output) {
-      lines.push(`${hl("kw", "await")} ${hl("var", "tts")}${hl("op", ".")}${hl("fn", "save")}${hl("op", "(")}${hl("str", textQuoted)}${hl("op", ",")} ${hl("str", `"${output}"`)}${callStr}${hl("op", ");")}`)
+      lines.push(
+        `${hl("kw", "await")} ${hl("var", "tts")}${hl("op", ".")}${hl("fn", "save")}${hl("op", "(")}${hl("str", textQuoted)}${hl("op", ",")} ${hl("str", `"${output}"`)}${callStr}${hl("op", ");")}`,
+      );
     } else {
-      lines.push(`${hl("kw", "await")} ${hl("var", "tts")}${hl("op", ".")}${hl("fn", "speak")}${hl("op", "(")}${hl("str", textQuoted)}${callStr}${hl("op", ");")}`)
+      lines.push(
+        `${hl("kw", "await")} ${hl("var", "tts")}${hl("op", ".")}${hl("fn", "speak")}${hl("op", "(")}${hl("str", textQuoted)}${callStr}${hl("op", ");")}`,
+      );
     }
-    snippet.innerHTML = '<span class="bundle-size" title="Minified + gzipped"></span>' + lines.join("\n") + '<span class="copied">Copied!</span>';
+    snippet.innerHTML =
+      '<span class="bundle-size" title="Minified + gzipped"></span>' +
+      lines.join("\n") +
+      '<span class="copied">Copied!</span>';
 
     // Deferred bundle size fetch
     const sizeEl = snippet.querySelector(".bundle-size");

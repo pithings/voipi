@@ -43,7 +43,11 @@
     "oxlint": "latest",
     "std-env": "^4.0.0",
     "typescript": "latest",
-    "vitest": "latest"
+    "vitest": "latest",
+    "voipi": "latest"
+  },
+  "resolutions": {
+    "voipi": "link:."
   },
   "packageManager": "pnpm@10.29.3"
 }
