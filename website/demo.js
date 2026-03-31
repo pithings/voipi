@@ -1,3 +1,5 @@
+import { estimateSpeechDuration } from 'voipi'
+
 /** @type {Record<string, { label: string, voices: { id: string, label?: string }[] }>} */
 const providers = {
   auto: {
@@ -238,13 +240,29 @@ function initDemo() {
     });
   }
 
+  const durationEl = document.getElementById("demo-duration");
+
+  function updateDuration() {
+    const text = textInput.value;
+    const rate = Number.parseFloat(rateInput.value) || 1;
+    const seconds = estimateSpeechDuration(text, rate);
+    if (seconds > 0) {
+      const s = Math.round(seconds);
+      durationEl.textContent = `~${s}s`;
+      durationEl.classList.add("show");
+    } else {
+      durationEl.classList.remove("show");
+    }
+  }
+
   providerSelect.addEventListener("change", updateVoices);
   voiceSelect.addEventListener("change", updateCommand);
-  rateInput.addEventListener("input", updateCommand);
+  rateInput.addEventListener("input", () => { updateCommand(); updateDuration(); });
   outputInput.addEventListener("input", updateCommand);
-  textInput.addEventListener("input", updateCommand);
+  textInput.addEventListener("input", () => { updateCommand(); updateDuration(); });
   providerSelect.value = "edge-tts";
   updateVoices();
+  updateDuration();
 }
 
 if (document.readyState === "loading") {

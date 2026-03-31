@@ -261,6 +261,19 @@ section + section {
 }
 
 /* Bundle size badge */
+.demo-duration {
+  font-size: 0.75rem;
+  font-family: var(--mono);
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity 0.3s;
+  align-self: center;
+  white-space: nowrap;
+}
+.demo-duration.show {
+  opacity: 1;
+}
+
 .bundle-size {
   float: right;
   font-size: 0.65rem;
