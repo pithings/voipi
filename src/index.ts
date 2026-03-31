@@ -1,6 +1,7 @@
 export type { SpeakOptions, Voice } from "./types.ts";
 export { BaseVoiceProvider } from "./_provider.ts";
 export type { AudioData } from "./_provider.ts";
+export { getAudioDuration, estimateSpeechDuration } from "./_audio.ts";
 
 export { VoiPi, providerMap } from "./voipi.ts";
 export type { VoiPiOptions, ProviderFactory } from "./voipi.ts";

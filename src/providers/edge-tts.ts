@@ -7,7 +7,7 @@ import { resolveVoice } from "../_utils.ts";
 import { WebSocket } from "../_ws.ts";
 
 export interface EdgeTTSOptions {
-  /** Default voice (e.g. "en-US-AriaNeural") */
+  /** Default voice (e.g. "en-US-AvaNeural") */
   voice?: string;
   /** Prosody rate string (e.g. "+50%", "-20%", "default") */
   rate?: string;
@@ -28,6 +28,10 @@ export class EdgeTTS extends BaseVoiceProvider {
   private defaultVolume: string;
   private outputFormat: string;
 
+  override getDefaults() {
+    return { voice: this.defaultVoice, rate: this.defaultRate };
+  }
+
   // Edge TTS voices follow the pattern: locale-VoiceNameNeural
   override hasVoice(id: string): boolean {
     return /^[a-z]{2,3}(-[A-Z][A-Za-z]+)+-.+Neural$/.test(id);
@@ -35,7 +39,7 @@ export class EdgeTTS extends BaseVoiceProvider {
 
   constructor(options?: EdgeTTSOptions) {
     super();
-    this.defaultVoice = options?.voice ?? "en-US-AriaNeural";
+    this.defaultVoice = options?.voice ?? "en-US-AvaNeural";
     this.defaultRate = options?.rate ?? "default";
     this.defaultPitch = options?.pitch ?? "default";
     this.defaultVolume = options?.volume ?? "default";

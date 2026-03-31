@@ -5,7 +5,7 @@
   "license": "MIT",
   "repository": "unjs/voipi",
   "bin": {
-    "voipi": "./dist/cli.mjs"
+    "voipi": "./dist/cli/index.mjs"
   },
   "files": [
     "dist"
@@ -27,7 +27,7 @@
     "fmt": "automd && oxlint . --fix && oxfmt .",
     "lint": "oxlint . && oxfmt --check .",
     "prepack": "pnpm build",
-    "voipi": "node ./src/cli.ts",
+    "voipi": "node ./src/cli/index.ts",
     "release": "pnpm test && pnpm build && changelogen --release && npm publish && git push --follow-tags",
     "test": "pnpm lint && pnpm typecheck && vitest run --coverage",
     "typecheck": "tsgo --noEmit --skipLibCheck"
@@ -41,6 +41,7 @@
     "obuild": "latest",
     "oxfmt": "latest",
     "oxlint": "latest",
+    "std-env": "^4.0.0",
     "typescript": "latest",
     "vitest": "latest"
   },

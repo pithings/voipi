@@ -18,6 +18,10 @@ export class GoogleTTS extends BaseVoiceProvider {
   private defaultLang: string;
   private slow: boolean;
 
+  override getDefaults() {
+    return { lang: this.defaultLang };
+  }
+
   constructor(options?: GoogleTTSOptions) {
     super();
     this.defaultLang = options?.lang ?? "en";

@@ -24,13 +24,14 @@ You can use `voipi` directly with npx/pnpx/bunx.
 
 ```sh
 # Speak text (auto-selects best available provider)
+npx voipi "The quick brown fox jumps over the lazy dog"
 npx voipi speak "Hello world"
 
 # Choose a specific voice and speed
-npx voipi speak "Hello" -v en-US-AriaNeural -r 1.5
+npx voipi "Hi" -v en-US-BrianNeural -r 1.5
 
 # Save to file instead of playing
-npx voipi speak "Hello" -o hello.mp3
+npx voipi speak "Hi" -o hello.mp3
 
 # Use a specific provider
 npx voipi speak "Bonjour" -p google-tts -v fr
@@ -60,8 +61,27 @@ await voice.speak("Hello!", { voice: ["Samantha", "en-US-AriaNeural"], rate: 1.5
 // Save to file
 await voice.save("Hello!", "output.mp3");
 
+// Get audio data with duration
+const audio = await voice.toAudio("Hello world!");
+console.log(`Duration: ${audio.duration}s`);
+
 // List available voices
 const voices = await voice.listVoices();
+```
+
+### Duration Estimation
+
+Estimate playback duration before or after synthesis:
+
+```ts
+import { estimateSpeechDuration, getAudioDuration } from "voipi";
+
+// Pre-synthesis: estimate from text (~150 WPM heuristic)
+const seconds = estimateSpeechDuration("Hello world!", 1.0);
+
+// Post-synthesis: parse actual audio buffer (WAV/AIFF exact, MP3 estimated)
+const audio = await voice.toAudio("Hello world!"); // duration auto-populated
+console.log(audio.duration); // seconds
 ```
 
 You can also provide a custom provider chain using names, `[name, options]` tuples, or factory functions:
@@ -134,7 +154,7 @@ await fr.speak("Bonjour le monde!");
 
 ### Piper
 
-Local neural TTS powered by [Piper](https://github.com/rhasspy/piper). 40+ languages, fully offline after first download. Auto-installs the Piper binary (Linux) or pip package (macOS/Windows) and downloads ONNX voice models on demand.
+Local neural TTS powered by [Piper](https://github.com/rhasspy/piper). 40+ languages, fully offline after first download. Uses an existing `piper` install if found in PATH, otherwise auto-installs a standalone binary (Linux x86_64/aarch64) or pip venv (macOS/Windows). Voice models (ONNX) are downloaded on demand from HuggingFace and cached locally.
 
 ```ts
 import { Piper } from "voipi/piper";

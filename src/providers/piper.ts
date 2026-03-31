@@ -23,6 +23,10 @@ export class Piper extends BaseVoiceProvider {
   private lengthScale: number;
   private speaker: number;
 
+  override getDefaults() {
+    return { voice: this.defaultVoice };
+  }
+
   constructor(options?: PiperOptions) {
     super();
     this.defaultVoice = options?.voice ?? DEFAULT_VOICE;

@@ -24,6 +24,13 @@ export class MacOS extends BaseVoiceProvider {
     }
   }
 
+  override getDefaults() {
+    return {
+      voice: this._defaults.voice ?? "system default",
+      rate: this._defaults.rate?.toString(),
+    };
+  }
+
   override hasVoice(id: string): boolean {
     // Common built-in macOS voices (avoids exec call for fast path)
     return /^(Alex|Daniel|Fiona|Fred|Karen|Moira|Rishi|Samantha|Tessa|Veena|Victoria|Zoe)$/.test(

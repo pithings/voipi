@@ -11,7 +11,7 @@ export default defineBuildConfig({
         "./src/providers/google-tts.ts",
         "./src/providers/piper.ts",
         "./src/providers/browser.ts",
-        "./src/cli.ts",
+        "./src/cli/index.ts",
       ],
     },
   ],
