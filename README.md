@@ -18,6 +18,21 @@ Give your apps, CLIs, and agents a voice. VoiPi is a universal, zero-dependency,
 - **Multiple providers:** [Browser TTS](#browser-tts), [macOS](#macos), [Edge TTS](#edge-tts), [Google TTS](#google-tts), [Piper](#piper)
 - **Auto fallback:** Picks the best available provider per platform
 
+## Demo
+
+<p align="center">
+  <img src="demo.svg" alt="voipi demo" width="600">
+</p>
+
+## Samples
+
+| Provider   | Sample                                                                   |
+| ---------- | ------------------------------------------------------------------------ |
+| macOS      | <video src="samples/macos.aiff" controls preload="metadata"></video>     |
+| Piper      | <video src="samples/piper.wav" controls preload="metadata"></video>      |
+| Edge TTS   | <video src="samples/edge-tts.mp3" controls preload="metadata"></video>   |
+| Google TTS | <video src="samples/google-tts.mp3" controls preload="metadata"></video> |
+
 ## CLI
 
 You can use `voipi` directly with npx/pnpx/bunx.
@@ -189,19 +204,13 @@ const voices = await voice.listVoices();
 
 > **Note:** Browser TTS plays audio directly and does not support `save()` or raw audio export.
 
-## Development
+## Sponsors
 
-<details>
-
-<summary>local development</summary>
-
-- Clone this repository
-- Install latest LTS version of [Node.js](https://nodejs.org/en/)
-- Enable [Corepack](https://github.com/nodejs/corepack) using `corepack enable`
-- Install dependencies using `pnpm install`
-- Run interactive tests using `pnpm dev`
-
-</details>
+<p align="center">
+  <a href="https://sponsors.pi0.io/">
+    <img src="https://sponsors.pi0.io/sponsors.svg?xyz">
+  </a>
+</p>
 
 ## License
 
