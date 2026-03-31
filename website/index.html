@@ -3,6 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="https://raw.githubusercontent.com/pithings/voipi/main/logo.svg"
+    />
     <title>voipi — Universal Text-to-Speech for JavaScript</title>
     <meta
       name="description"
@@ -82,16 +87,6 @@
         max-width: 480px;
         margin: 0 auto 1.5rem;
       }
-      .hero-badges {
-        display: flex;
-        gap: 0.5rem;
-        justify-content: center;
-        flex-wrap: wrap;
-        margin-bottom: 1.5rem;
-      }
-      .hero-badges img {
-        height: 22px;
-      }
       .hero-actions {
         display: flex;
         gap: 0.75rem;
@@ -121,33 +116,6 @@
         color: var(--text);
       }
 
-      /* Features */
-      .features {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-      }
-      .feature {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 1.25rem;
-      }
-      .feature-icon {
-        font-size: 1.25rem;
-        margin-bottom: 0.4rem;
-      }
-      .feature h3 {
-        font-size: 0.9rem;
-        font-weight: 600;
-        margin-bottom: 0.25rem;
-      }
-      .feature p {
-        font-size: 0.8rem;
-        color: var(--text-muted);
-        line-height: 1.5;
-      }
-
       /* Install bar */
       .install {
         background: var(--code-bg);
@@ -161,13 +129,29 @@
         justify-content: space-between;
         gap: 0.5rem;
         margin-top: 1.5rem;
-        user-select: all;
+        cursor: pointer;
+        position: relative;
+      }
+      .install:hover {
+        border-color: var(--accent);
       }
       .install code {
         color: var(--text);
       }
       .install .prefix {
         color: var(--text-muted);
+        user-select: none;
+      }
+      .install .copied {
+        position: absolute;
+        right: 1rem;
+        font-size: 0.75rem;
+        color: var(--accent);
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+      .install .copied.show {
+        opacity: 1;
       }
 
       /* Section titles */
@@ -286,16 +270,62 @@
       .demo-wrap {
         margin-top: 1.5rem;
         text-align: center;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 1.25rem;
         overflow: hidden;
+        position: relative;
+        display: inline-block;
       }
       .demo-wrap img {
         width: 100%;
         max-width: 560px;
         border-radius: 6px;
+        cursor: pointer;
+        transition: transform 0.15s;
+        display: block;
+      }
+      .demo-wrap::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 56px;
+        height: 56px;
+        background: rgba(0, 0, 0, 0.55);
+        border-radius: 50%;
+        pointer-events: none;
+        transition: opacity 0.15s, transform 0.15s;
+      }
+      .demo-wrap::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-40%, -50%);
+        z-index: 1;
+        border-style: solid;
+        border-width: 10px 0 10px 18px;
+        border-color: transparent transparent transparent rgba(255, 255, 255, 0.9);
+        pointer-events: none;
+        transition: opacity 0.15s;
+      }
+      .demo-wrap:hover::after {
+        background: rgba(0, 0, 0, 0.7);
+        transform: translate(-50%, -50%) scale(1.1);
+      }
+      .demo-wrap:hover img {
+        transform: scale(1.02);
+      }
+      .demo-wrap.playing::after,
+      .demo-wrap.playing::before {
+        opacity: 0;
+      }
+      .demo-wrap img.playing {
+        animation: pulse 0.6s ease-in-out;
+      }
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        30% { transform: scale(1.04); }
+        100% { transform: scale(1); }
       }
 
       /* Footer */
@@ -317,7 +347,6 @@
         .hero h1 {
           font-size: 1.75rem;
         }
-        .features,
         .providers-grid {
           grid-template-columns: 1fr;
         }
@@ -341,66 +370,17 @@
           Give your apps, CLIs, and agents a voice. Universal, zero-dependency, free text-to-speech
           for JavaScript.
         </p>
-        <div class="hero-badges">
-          <a href="https://npmx.dev/package/voipi"
-            ><img
-              src="https://img.shields.io/npm/v/voipi?color=facc15&labelColor=1a1a1a&style=flat-square"
-              alt="npm version"
-          /></a>
-          <a href="https://npm.chart.dev/voipi"
-            ><img
-              src="https://img.shields.io/npm/dm/voipi?color=facc15&labelColor=1a1a1a&style=flat-square"
-              alt="npm downloads"
-          /></a>
-        </div>
         <div class="hero-actions">
           <a href="https://github.com/pithings/voipi" class="btn btn-primary">GitHub</a>
+          <a href="#cli" class="btn btn-outline">Usage</a>
           <a href="#samples" class="btn btn-outline">Listen to samples</a>
-          <a href="https://npmx.dev/package/voipi" class="btn btn-outline">npm</a>
         </div>
-      </section>
-    </div>
-
-    <!-- Features -->
-    <div class="container">
-      <section>
-        <div class="features">
-          <div class="feature">
-            <div class="feature-icon">0</div>
-            <h3>Zero Dependencies</h3>
-            <p>Pure JS, under 50kB total install size. Nothing extra to install.</p>
-          </div>
-          <div class="feature">
-            <div class="feature-icon">&mdash;</div>
-            <h3>No API Keys</h3>
-            <p>Works out of the box. No accounts, no tokens, no config.</p>
-          </div>
-          <div class="feature">
-            <div class="feature-icon">5</div>
-            <h3>Multiple Providers</h3>
-            <p>
-              Browser TTS, macOS, Edge TTS, Google TTS, and Piper &mdash; pick one or let voipi
-              choose.
-            </p>
-          </div>
-          <div class="feature">
-            <div class="feature-icon">&darr;</div>
-            <h3>Auto Fallback</h3>
-            <p>Automatically picks the best available provider for the current platform.</p>
-          </div>
-        </div>
-        <div class="install">
-          <code><span class="prefix">$</span> npx voipi "Hello world"</code>
-        </div>
-      </section>
-    </div>
-
-    <!-- Demo -->
-    <div class="container">
-      <section>
-        <h2 class="section-title">Demo</h2>
         <div class="demo-wrap">
           <img src="./demo.svg" alt="voipi CLI demo" />
+        </div>
+        <div class="install" onclick="copyInstall(this)">
+          <code><span class="prefix">$</span> npx voipi "Hello world"</code>
+          <span class="copied">Copied!</span>
         </div>
       </section>
     </div>
@@ -444,7 +424,7 @@
 
     <!-- CLI -->
     <div class="container">
-      <section>
+      <section id="cli">
         <h2 class="section-title">CLI</h2>
         <div class="cli-examples">
           <pre><span class="cmt"># Speak text (auto-selects best provider)</span>
@@ -546,6 +526,8 @@
           <a href="https://github.com/pithings/voipi">GitHub</a>
           &nbsp;&middot;&nbsp;
           <a href="https://npmx.dev/package/voipi">npm</a>
+          &nbsp;&middot;&nbsp; Made with &hearts; by
+          <a href="https://github.com/pi0">pi0</a>
           &nbsp;&middot;&nbsp; Published under
           <a href="https://github.com/unjs/voipi/blob/main/LICENSE">MIT</a>
         </p>
@@ -553,11 +535,38 @@
     </footer>
 
     <script>
+      function copyInstall(el) {
+        const code = el.querySelector("code").textContent.replace(/^\$\s*/, "");
+        navigator.clipboard.writeText(code);
+        const badge = el.querySelector(".copied");
+        badge.classList.add("show");
+        setTimeout(() => badge.classList.remove("show"), 1500);
+      }
+
       document.querySelectorAll("audio").forEach((audio) => {
         audio.addEventListener("play", () => {
           document.querySelectorAll("audio").forEach((other) => {
             if (other !== audio) other.pause();
           });
+        });
+      });
+
+      var demoWrap = document.querySelector(".demo-wrap");
+      var demoImg = demoWrap.querySelector("img");
+      demoWrap.addEventListener("click", function () {
+        var audios = document.querySelectorAll("audio");
+        audios.forEach(function (a) { a.pause(); });
+        var pick = audios[Math.floor(Math.random() * audios.length)];
+        pick.currentTime = 0;
+        pick.play();
+        demoWrap.classList.add("playing");
+        demoImg.classList.remove("playing");
+        demoImg.offsetWidth;
+        demoImg.classList.add("playing");
+      });
+      document.querySelectorAll("audio").forEach(function (a) {
+        a.addEventListener("ended", function () {
+          demoWrap.classList.remove("playing");
         });
       });
     </script>
