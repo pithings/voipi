@@ -1,15 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { MacOS, EdgeTTS, GoogleTTS, BaseVoiceProvider } from "../src/index.ts";
 
+const isMacOS = process.platform === "darwin";
+
 const providers = [
-  { name: "macos", factory: () => new MacOS() },
-  { name: "edge-tts", factory: () => new EdgeTTS() },
-  { name: "google-tts", factory: () => new GoogleTTS() },
+  { name: "macos", factory: () => new MacOS(), skip: !isMacOS },
+  { name: "edge-tts", factory: () => new EdgeTTS(), skip: false },
+  { name: "google-tts", factory: () => new GoogleTTS(), skip: false },
 ] as const;
 
 describe("voipi", () => {
-  for (const { name, factory } of providers) {
-    describe(`${name} provider`, () => {
+  for (const { name, factory, skip } of providers) {
+    describe.skipIf(skip)(`${name} provider`, () => {
       it("creates a provider with correct interface", () => {
         const provider: BaseVoiceProvider = factory();
         expect(provider.name).toBe(name);
