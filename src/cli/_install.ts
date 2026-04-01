@@ -148,7 +148,7 @@ export async function installMCP(opts: { global: boolean }): Promise<void> {
   }
 
   if (installed === 0) {
-    console.log(`${d}No agents detected. Install manually — see: https://voipi.dev${r}`);
+    console.log(`${d}No agents detected. Install manually — see: https://voipi.vercel.app${r}`);
   } else {
     console.log(
       `\n🎙️  ${g}VoiPi${r} MCP server installed to ${b}${installed}${r} agent${installed > 1 ? "s" : ""}`,
