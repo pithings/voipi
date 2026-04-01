@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.0.5
+
+[compare changes](https://github.com/pithings/voipi/compare/v0.0.4...v0.0.5)
+
+### 🚀 Enhancements
+
+- `voipi mcp --install` ([ee28bad](https://github.com/pithings/voipi/commit/ee28bad))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+
 ## v0.0.4
 
 [compare changes](https://github.com/pithings/voipi/compare/v0.0.3...v0.0.4)
