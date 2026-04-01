@@ -6,24 +6,28 @@ interface Agent {
   /** CLI binary name to detect */
   bin: string;
   /** Install via CLI command */
-  install?: (npxCmd: string, global: boolean) => string[];
+  install?: (launcher: McpLauncher, global: boolean) => string[];
   /** Remove command (used to replace existing entry) */
   remove?: (global: boolean) => string[];
   /** Check if install step can be skipped */
   installCheck?: () => Promise<boolean>;
   /** Install via JSON config file */
   json?: (
-    npxCmd: string,
-    mcpArgs: string[],
+    launcher: McpLauncher,
     global: boolean,
   ) => { path: string; build: () => Record<string, unknown> };
 }
+
+type McpLauncher = {
+  command: string;
+  args: string[];
+};
 
 const AGENTS: Agent[] = [
   {
     name: "Claude Code",
     bin: "claude",
-    install: (npx, global) => [
+    install: (launcher, global) => [
       "claude",
       "mcp",
       "add",
@@ -31,41 +35,49 @@ const AGENTS: Agent[] = [
       "-s",
       global ? "user" : "local",
       "--",
-      npx,
-      "-y",
-      "voipi@latest",
-      "mcp",
+      launcher.command,
+      ...launcher.args,
     ],
     remove: (global) => ["claude", "mcp", "remove", "voipi", "-s", global ? "user" : "local"],
   },
   {
     name: "Codex",
     bin: "codex",
-    install: (npx) => ["codex", "mcp", "add", "voipi", "--", npx, "-y", "voipi@latest", "mcp"],
+    install: (launcher) => [
+      "codex",
+      "mcp",
+      "add",
+      "voipi",
+      "--",
+      launcher.command,
+      ...launcher.args,
+    ],
     remove: () => ["codex", "mcp", "remove", "voipi"],
   },
   {
     name: "Cursor",
     bin: "cursor",
-    json: (npx, mcpArgs, global) => ({
+    json: (launcher, global) => ({
       path: _configPath(global ? "~/.cursor/mcp.json" : ".cursor/mcp.json"),
-      build: () => ({ mcpServers: { voipi: { command: npx, args: mcpArgs } } }),
+      build: () => ({ mcpServers: { voipi: { command: launcher.command, args: launcher.args } } }),
     }),
   },
   {
     name: "Windsurf",
     bin: "windsurf",
-    json: (npx, mcpArgs, global) => ({
+    json: (launcher, global) => ({
       path: _configPath(global ? "~/.windsurf/mcp.json" : ".windsurf/mcp.json"),
-      build: () => ({ mcpServers: { voipi: { command: npx, args: mcpArgs } } }),
+      build: () => ({ mcpServers: { voipi: { command: launcher.command, args: launcher.args } } }),
     }),
   },
   {
     name: "OpenCode",
     bin: "opencode",
-    json: (npx, mcpArgs, global) => ({
+    json: (launcher, global) => ({
       path: _configPath(global ? "~/.config/opencode/.opencode.json" : "opencode.json"),
-      build: () => ({ mcp: { voipi: { type: "local", command: [npx, ...mcpArgs] } } }),
+      build: () => ({
+        mcp: { voipi: { type: "local", command: [launcher.command, ...launcher.args] } },
+      }),
     }),
   },
   {
@@ -73,9 +85,9 @@ const AGENTS: Agent[] = [
     bin: "pi",
     install: () => ["pi", "install", "npm:pi-mcp-adapter"],
     installCheck: () => _hasPiPackage("npm:pi-mcp-adapter"),
-    json: (npx, mcpArgs, global) => ({
+    json: (launcher, global) => ({
       path: _configPath(global ? "~/.pi/agent/mcp.json" : ".pi/mcp.json"),
-      build: () => ({ mcpServers: { voipi: { command: npx, args: mcpArgs } } }),
+      build: () => ({ mcpServers: { voipi: { command: launcher.command, args: launcher.args } } }),
     }),
   },
 ];
@@ -89,8 +101,7 @@ export async function installMCP(opts: { global: boolean }): Promise<void> {
 
   console.log(logo());
 
-  const npxCmd = await _resolveNpx();
-  const mcpArgs = ["-y", "voipi@latest", "mcp"];
+  const launcher = resolveMcpLauncher(await _resolveNpx());
   const path = getNodeBuiltin("node:path");
   const fsp = getNodeBuiltin("node:fs/promises");
 
@@ -101,7 +112,7 @@ export async function installMCP(opts: { global: boolean }): Promise<void> {
 
     // CLI-based install
     if (agent.install && !(await agent.installCheck?.())) {
-      const args = agent.install(npxCmd, opts.global);
+      const args = agent.install(launcher, opts.global);
       try {
         await exec(args[0]!, args.slice(1));
         if (!agent.json) {
@@ -130,7 +141,7 @@ export async function installMCP(opts: { global: boolean }): Promise<void> {
 
     // JSON config-based install
     if (agent.json) {
-      const cfg = agent.json(npxCmd, mcpArgs, opts.global);
+      const cfg = agent.json(launcher, opts.global);
       try {
         const existing = await _readJson(fsp, cfg.path);
         const merged = _deepMerge(existing, cfg.build());
@@ -174,6 +185,13 @@ async function _resolveNpx(): Promise<string> {
   if (await which("npx")) return "npx";
   if (await which("bunx")) return "bunx";
   return "npx";
+}
+
+export function resolveMcpLauncher(command: string): McpLauncher {
+  return {
+    command,
+    args: command === "pnpx" ? ["voipi@latest", "mcp"] : ["-y", "voipi@latest", "mcp"],
+  };
 }
 
 async function _readJson(
