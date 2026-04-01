@@ -2,6 +2,14 @@
   "name": "voipi",
   "version": "0.0.5",
   "description": "",
+  "keywords": [
+    "pi-extension",
+    "pi-package",
+    "text-to-speech",
+    "tts",
+    "voice",
+    "voipi"
+  ],
   "license": "MIT",
   "repository": "pithings/voipi",
   "bin": {
@@ -49,5 +57,10 @@
   "resolutions": {
     "voipi": "link:."
   },
-  "packageManager": "pnpm@10.29.3"
+  "packageManager": "pnpm@10.29.3",
+  "pi": {
+    "extensions": [
+      "./packages/pi/extensions/*.ts"
+    ]
+  }
 }

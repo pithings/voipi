@@ -251,6 +251,16 @@ const voices = await voice.listVoices();
 
 > **Note:** Browser TTS plays audio directly and does not support `save()` or raw audio export.
 
+## Pi Extension
+
+VoiPi also ships with a [pi](https://pi.dev) package that adds TTS tools and commands to pi.
+
+```sh
+pi install git:github.com/pithings/voipi
+```
+
+See [`packages/pi/README.md`](./packages/pi/README.md) for usage details.
+
 ## Sponsors
 
 <p align="center">
