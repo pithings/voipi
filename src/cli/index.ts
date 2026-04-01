@@ -6,6 +6,7 @@ import { getAudioDuration } from "../_audio.ts";
 import { VoiPi, providerMap } from "../voipi.ts";
 import { createProgress, estimateSynthTime } from "./_progress.ts";
 import { logo } from "./_logo.ts";
+import { serveMCP } from "./_mcp.ts";
 
 const providerNames = ["auto", ...Object.keys(providerMap)];
 
@@ -16,6 +17,7 @@ function usage(): void {
 Usage:
   voipi speak <text> [-v|--voice <name>] [-l|--lang <code>] [-r|--rate <n>] [-o|--output <file>] [-p|--provider <name>]
   voipi voices [-p|--provider <name>]
+  voipi mcp
   voipi --help
 
 Providers: ${providerNames.map((n) => (n === "auto" ? "auto (default)" : n)).join(", ")}`);
@@ -37,6 +39,7 @@ ${y}voipi${r} ${d}-${r} text-to-voice and voice-to-text
 ${o}Usage:${r}
   ${y}voipi speak${r} ${d}<text>${r} ${d}[-v|--voice <name>] [-l|--lang <code>] [-r|--rate <n>] [-o|--output <file>] [-p|--provider <name>]${r}
   ${y}voipi voices${r} ${d}[-p|--provider <name>]${r}
+  ${y}voipi mcp${r} ${d}— start MCP stdio server${r}
   ${y}voipi${r} ${d}--help${r}
 
 ${o}Providers:${r} ${providers}`);
@@ -117,6 +120,8 @@ async function main(): Promise<void> {
     await speak(voipi, text);
   } else if (command === "voices") {
     await showVoices(voipi);
+  } else if (command === "mcp") {
+    await serveMCP();
   } else {
     // Treat unknown command as text for speak
     const text = positionals.join(" ");

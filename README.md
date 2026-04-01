@@ -11,6 +11,7 @@ Give your apps, CLIs, and agents a voice. VoiPi is a universal, zero-dependency,
 - **Multiple providers:** [Browser TTS](#browser-tts), [macOS](#macos), [Edge TTS](#edge-tts), [Google TTS](#google-tts), [Piper](#piper), [eSpeak NG](#espeak-ng)
 - **Auto fallback:** Picks the best available provider per platform
 - **Auto language detection:** Detects script (Arabic, Farsi, CJK, Cyrillic, etc.) and Latin-script languages (French, Spanish, German, Portuguese, etc.) — picks the best voice automatically
+- **[MCP Server](#mcp-server):** Give AI agents a voice — works with Claude Code, Cursor, and any MCP client
 
 ## Demo
 
@@ -43,6 +44,9 @@ npx voipi voices
 
 # List voices for a specific provider
 npx voipi voices -p edge-tts
+
+# Start MCP server (stdio transport)
+npx voipi mcp
 ```
 
 ## Programmatic Usage
@@ -236,6 +240,37 @@ const voices = await voice.listVoices();
 ```
 
 > **Note:** Browser TTS plays audio directly and does not support `save()` or raw audio export.
+
+## MCP Server
+
+VoiPi includes a built-in [MCP](https://modelcontextprotocol.io/) server that exposes text-to-speech tools over the stdio transport. This lets AI agents and LLM clients (Claude Code, Cursor, etc.) speak text, save audio files, and list voices.
+
+Add VoiPi as an MCP server to your agent:
+
+```sh
+# Claude Code
+claude mcp add voipi -- npx -y voipi@latest mcp
+```
+
+```jsonc
+// .vscode/mcp.json
+{ "servers": { "voipi": { "command": "npx", "args": ["-y", "voipi@latest", "mcp"] } } }
+```
+
+```jsonc
+// .cursor/mcp.json
+{ "mcpServers": { "voipi": { "command": "npx", "args": ["-y", "voipi@latest", "mcp"] } } }
+```
+
+**Available tools:**
+
+| Tool          | Description                               |
+| ------------- | ----------------------------------------- |
+| `speak`       | Synthesize text and play through speakers |
+| `save`        | Synthesize text and save to a file        |
+| `list_voices` | List available voices for a provider      |
+
+All tools accept an optional `provider` parameter (`edge-tts`, `google-tts`, `piper`, `macos`, `espeak-ng`) and voice/language/rate options.
 
 ## Sponsors
 
