@@ -179,6 +179,7 @@ describe("mcp server", () => {
     expect(names).toContain("speak");
     expect(names).toContain("save");
     expect(names).toContain("list_voices");
+    expect(names).toContain("list_providers");
 
     for (const tool of result.tools) {
       expect(tool.inputSchema).toHaveProperty("type", "object");
@@ -221,6 +222,29 @@ describe("mcp server", () => {
     const result = lines[0]!.result as { isError: boolean; content: { text: string }[] };
     expect(result.isError).toBe(true);
     expect(result.content[0]!.text).toContain("nonexistent_tool");
+  });
+
+  it("list_providers returns all providers with annotations", async () => {
+    const { lines } = await mcpRequest([
+      rpc("initialize", 1, {
+        protocolVersion: "2025-06-18",
+        capabilities: {},
+        clientInfo: { name: "test", version: "0.1" },
+      }),
+      rpc("tools/call", 2, { name: "list_providers", arguments: {} }),
+    ]);
+
+    expect(lines).toHaveLength(2);
+    const result = lines[1]!.result as { content: { type: string; text: string }[] };
+    expect(result.content).toHaveLength(1);
+    const text = result.content[0]!.text;
+    expect(text).toContain("edge-tts");
+    expect(text).toContain("google-tts");
+    expect(text).toContain("macos");
+    expect(text).toContain("piper");
+    expect(text).toContain("espeak-ng");
+    expect(text).toContain("requires network");
+    expect(text).toContain("default");
   });
 
   it("uses VoiPi fallback path for speak in auto mode", async () => {

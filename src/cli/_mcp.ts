@@ -4,6 +4,10 @@ import { getNodeBuiltin, resolveVoice } from "../_utils.ts";
 import { getAudioDuration, estimateSpeechDuration } from "../_audio.ts";
 import pkg from "../../package.json" with { type: "json" };
 
+const _isDarwin = globalThis.process?.platform === "darwin";
+const _onlineProviders = new Set(["edge-tts", "google-tts"]);
+const _defaultProviderName = _isDarwin ? "macos" : "edge-tts";
+
 const PROTOCOL_VERSION = "2025-06-18";
 const SUPPORTED_PROTOCOL_VERSIONS = new Set(["2024-11-05", "2025-03-26", "2025-06-18"]);
 const SERVER_INFO = { name: pkg.name, version: pkg.version };
@@ -25,8 +29,7 @@ const TOOLS = [
         rate: { type: "number", description: "Speech rate multiplier (1.0 = normal)" },
         provider: {
           type: "string",
-          description:
-            "TTS provider name. Leave empty for auto-detection. Prefer edge-tts (online, high quality), macos (native, fast), or piper (offline, neural).",
+          description: `TTS provider name. Leave empty for auto-detection (default: ${_defaultProviderName}, ${_onlineProviders.has(_defaultProviderName) ? "requires network" : "offline"}). Prefer edge-tts (online, high quality), macos (native, fast), or piper (offline, neural).`,
         },
         wait: {
           type: "boolean",
@@ -67,6 +70,14 @@ const TOOLS = [
           description: "TTS provider name. Leave empty for auto-detection.",
         },
       },
+    },
+  },
+  {
+    name: "list_providers",
+    description: "List all available TTS providers",
+    inputSchema: {
+      type: "object" as const,
+      properties: {},
     },
   },
 ];
@@ -189,7 +200,7 @@ async function _handleRequest(req: JsonRpcRequest): Promise<Record<string, unkno
         capabilities: CAPABILITIES,
         serverInfo: SERVER_INFO,
         instructions:
-          "Voice output to speak out loud. Use proactively — no need for the user to ask. Speak to announce completed tasks, alert on blockers, or talk casually. Keep it short and natural — clean plain text only (no markdown, URLs, or code). Always match the conversation language: set `lang` to the appropriate language code (e.g. `fa` for Persian, `fr` for French). For non-English languages, also pick a matching voice. Default to `wait: false` for fire-and-forget.",
+          "Voice output to speak out loud. Use proactively — no need for the user to ask. Speak to announce completed tasks, alert on blockers, or talk casually. Keep it short and natural — clean plain text only (no markdown, URLs, or code). Always match the conversation language: set `lang` to the appropriate language code (e.g. `fa` for Persian, `fr` for French). For non-English languages, also pick a matching voice. Default to `wait: false` for fire-and-forget. Note: edge-tts and google-tts require network access; prefer offline providers (macos, piper, espeak-ng) when network is unavailable.",
       });
     }
 
@@ -221,6 +232,8 @@ async function _handleToolCall(
         return _response(id, await _toolSave(args));
       case "list_voices":
         return _response(id, await _toolListVoices(args));
+      case "list_providers":
+        return _response(id, _toolListProviders());
       default:
         return _response(id, {
           isError: true,
@@ -308,6 +321,24 @@ async function _toolListVoices(args: Record<string, unknown>): Promise<unknown> 
       {
         type: "text",
         text: `${provider.name}: ${voices.length} voices\n\n${lines.join("\n")}`,
+      },
+    ],
+  };
+}
+
+function _toolListProviders(): unknown {
+  const names = Object.keys(providerMap);
+  const lines = names.map((n) => {
+    const tags: string[] = [];
+    if (n === _defaultProviderName) tags.push("default");
+    if (_onlineProviders.has(n)) tags.push("requires network");
+    return `- ${n}${tags.length > 0 ? ` (${tags.join(", ")})` : ""}`;
+  });
+  return {
+    content: [
+      {
+        type: "text",
+        text: `Available providers:\n${lines.join("\n")}`,
       },
     ],
   };
