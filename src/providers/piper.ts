@@ -4,7 +4,7 @@ import { detectLanguage } from "../_lang.ts";
 import { getNodeBuiltin, resolveVoice } from "../_utils.ts";
 
 export interface PiperOptions {
-  /** Default voice model (e.g. "en_US-amy-low"). Default: "en_US-amy-low" */
+  /** Default voice model (e.g. "en_US-libritts-high"). Default: "en_US-libritts-high" */
   voice?: string;
   /** Speech rate scale (< 1 faster, > 1 slower). Default: 1.0 */
   lengthScale?: number;
@@ -14,7 +14,7 @@ export interface PiperOptions {
 
 const PIPER_BINARY_VERSION = "2023.11.14-2";
 const PIPER_PIP_VERSION = "1.4.1";
-const DEFAULT_VOICE = "en_US-amy-low";
+const DEFAULT_VOICE = "en_US-libritts-high";
 const HF_BASE = "https://huggingface.co/rhasspy/piper-voices/resolve/main";
 
 export class Piper extends BaseVoiceProvider {
@@ -72,33 +72,27 @@ export class Piper extends BaseVoiceProvider {
 
 const LANG_VOICES: Record<string, string> = {
   ar: "ar_JO-kareem-medium",
-  bn: "bn_BD-kazol-medium",
   cs: "cs_CZ-jirka-medium",
   da: "da_DK-talesyntese-medium",
-  de: "de_DE-thorsten-medium",
-  el: "el_GR-rapunzel-low",
-  es: "es_ES-sharvard-medium",
+  de: "de_DE-thorsten-high",
+  el: "el_GR-rapunzelina-medium",
+  es: "es_MX-claude-high",
   fa: "fa_IR-amir-medium",
-  fr: "fr_FR-siwis-medium",
-  hi: "hi_IN-madhu-medium",
-  ja: "ja_JP-takumi-medium",
+  fr: "fr_FR-mls-medium",
+  hi: "hi_IN-pratham-medium",
   ka: "ka_GE-natia-medium",
-  kn: "kn_IN-alpha-low",
-  ko: "ko_KR-kagayaki-medium",
-  my: "my_MM-google-medium",
-  no: "no_NO-talesyntese-medium",
-  pl: "pl_PL-gosia-medium",
-  pt: "pt_BR-faber-medium",
+  no: "no_NO-nvcc-medium",
+  pl: "pl_PL-bass-high",
+  pt: "pt_BR-cadu-medium",
   ro: "ro_RO-mihai-medium",
-  ru: "ru_RU-irina-medium",
+  ru: "ru_RU-denis-medium",
   sk: "sk_SK-lili-medium",
-  sv: "sv_SE-nst-medium",
-  te: "te_IN-cmu_indic-medium",
-  th: "th_TH-google-medium",
+  sv: "sv_SE-alma-medium",
+  te: "te_IN-maya-medium",
   tr: "tr_TR-dfki-medium",
-  uk: "uk_UA-lada-medium",
-  vi: "vi_VN-vivos-x_low",
-  zh: "zh_CN-huayan-medium",
+  uk: "uk_UA-ukrainian_tts-medium",
+  vi: "vi_VN-vais1000-medium",
+  zh: "zh_CN-chaowen-medium",
 };
 
 /** Resolved piper command: either a binary path or ["python3", "-m", "piper"] */
