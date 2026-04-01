@@ -58,6 +58,9 @@ Add VoiPi as an MCP server to your agent:
 ```sh
 # Claude Code
 claude mcp add voipi -- npx -y voipi@latest mcp
+
+# Codex
+codex mcp add voipi -- npx -y voipi@latest mcp
 ```
 
 ```jsonc
@@ -68,6 +71,11 @@ claude mcp add voipi -- npx -y voipi@latest mcp
 ```jsonc
 // .cursor/mcp.json
 { "mcpServers": { "voipi": { "command": "npx", "args": ["-y", "voipi@latest", "mcp"] } } }
+```
+
+```jsonc
+// opencode.json
+{ "mcp": { "voipi": { "type": "local", "command": ["npx", "-y", "voipi@latest", "mcp"] } } }
 ```
 
 **Available tools:**

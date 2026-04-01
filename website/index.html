@@ -70,8 +70,10 @@
           <div class="mcp-tabs">
             <button class="mcp-tab active" data-mcp="prompt">Prompt</button>
             <button class="mcp-tab" data-mcp="claude-code">Claude Code</button>
+            <button class="mcp-tab" data-mcp="codex">Codex</button>
             <button class="mcp-tab" data-mcp="vscode">VS Code</button>
             <button class="mcp-tab" data-mcp="cursor">Cursor</button>
+            <button class="mcp-tab" data-mcp="opencode">OpenCode</button>
           </div>
           <div class="mcp-panels">
             <pre
@@ -86,6 +88,11 @@
             ><span class="copied">Copied!</span><span class="kw">claude</span> <span class="fn">mcp add</span> <span class="cmd-bin">voipi</span> -- npx -y <span class="str">voipi@latest</span> <span class="str">mcp</span></pre>
             <pre
               class="mcp-panel"
+              data-mcp="codex"
+              onclick="copySnippet(this)"
+            ><span class="copied">Copied!</span><span class="kw">codex</span> <span class="fn">mcp add</span> <span class="cmd-bin">voipi</span> -- npx -y <span class="str">voipi@latest</span> <span class="str">mcp</span></pre>
+            <pre
+              class="mcp-panel"
               data-mcp="vscode"
               onclick="copySnippet(this)"
             ><span class="copied">Copied!</span><span class="cmt">// .vscode/mcp.json</span>
@@ -96,6 +103,12 @@
               onclick="copySnippet(this)"
             ><span class="copied">Copied!</span><span class="cmt">// .cursor/mcp.json</span>
 { <span class="str">"mcpServers"</span>: { <span class="str">"voipi"</span>: { <span class="str">"command"</span>: <span class="str">"npx"</span>, <span class="str">"args"</span>: [<span class="str">"-y"</span>, <span class="str">"voipi@latest"</span>, <span class="str">"mcp"</span>] } } }</pre>
+            <pre
+              class="mcp-panel"
+              data-mcp="opencode"
+              onclick="copySnippet(this)"
+            ><span class="copied">Copied!</span><span class="cmt">// opencode.json</span>
+{ <span class="str">"mcp"</span>: { <span class="str">"voipi"</span>: { <span class="str">"type"</span>: <span class="str">"local"</span>, <span class="str">"command"</span>: [<span class="str">"npx"</span>, <span class="str">"-y"</span>, <span class="str">"voipi@latest"</span>, <span class="str">"mcp"</span>] } } }</pre>
           </div>
         </div>
 
