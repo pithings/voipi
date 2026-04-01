@@ -1,6 +1,18 @@
 # Changelog
 
 
+## v0.0.9
+
+[compare changes](https://github.com/pithings/voipi/compare/v0.0.8...v0.0.9)
+
+### 🚀 Enhancements
+
+- **mcp:** Add `list_providers` tool and network annotations ([54f8be5](https://github.com/pithings/voipi/commit/54f8be5))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+
 ## v0.0.8
 
 [compare changes](https://github.com/pithings/voipi/compare/v0.0.7...v0.0.8)
