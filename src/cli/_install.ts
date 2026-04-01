@@ -1,4 +1,5 @@
 import { exec, which, getNodeBuiltin } from "../_utils.ts";
+import { logo } from "./_logo.ts";
 
 interface Agent {
   name: string;
@@ -86,6 +87,8 @@ export async function installMCP(opts: { global: boolean }): Promise<void> {
   const d = isTTY ? "\x1B[2m" : "";
   const r = isTTY ? "\x1B[0m" : "";
 
+  console.log(logo());
+
   const npxCmd = await _resolveNpx();
   const mcpArgs = ["-y", "voipi@latest", "mcp"];
   const path = getNodeBuiltin("node:path");
@@ -146,6 +149,10 @@ export async function installMCP(opts: { global: boolean }): Promise<void> {
 
   if (installed === 0) {
     console.log(`${d}No agents detected. Install manually — see: https://voipi.dev${r}`);
+  } else {
+    console.log(
+      `\n🎙️  ${g}VoiPi${r} MCP server installed to ${b}${installed}${r} agent${installed > 1 ? "s" : ""}`,
+    );
   }
 }
 

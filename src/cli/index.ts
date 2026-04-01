@@ -126,7 +126,7 @@ async function main(): Promise<void> {
   } else if (command === "voices") {
     await showVoices(voipi);
   } else if (command === "mcp") {
-    if (values.install) {
+    if (values.install || positionals[1] === "install") {
       await installMCP({ global: values.global !== false });
       return;
     }
