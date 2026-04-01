@@ -49,6 +49,37 @@ npx voipi voices -p edge-tts
 npx voipi mcp
 ```
 
+## MCP Server
+
+VoiPi includes a built-in [MCP](https://modelcontextprotocol.io/) server that exposes text-to-speech tools over the stdio transport. This lets AI agents and LLM clients (Claude Code, Cursor, etc.) speak text, save audio files, and list voices.
+
+Add VoiPi as an MCP server to your agent:
+
+```sh
+# Claude Code
+claude mcp add voipi -- npx -y voipi@latest mcp
+```
+
+```jsonc
+// .vscode/mcp.json
+{ "servers": { "voipi": { "command": "npx", "args": ["-y", "voipi@latest", "mcp"] } } }
+```
+
+```jsonc
+// .cursor/mcp.json
+{ "mcpServers": { "voipi": { "command": "npx", "args": ["-y", "voipi@latest", "mcp"] } } }
+```
+
+**Available tools:**
+
+| Tool          | Description                               |
+| ------------- | ----------------------------------------- |
+| `speak`       | Synthesize text and play through speakers |
+| `save`        | Synthesize text and save to a file        |
+| `list_voices` | List available voices for a provider      |
+
+All tools accept an optional `provider` parameter (`edge-tts`, `google-tts`, `piper`, `macos`, `espeak-ng`) and voice/language/rate options.
+
 ## Programmatic Usage
 
 `VoiPi` automatically picks the best available provider with fallback chain (macOS → Edge TTS → Google TTS → Piper → eSpeak NG):
@@ -73,6 +104,29 @@ console.log(`Duration: ${audio.duration}s`);
 
 // List available voices
 const voices = await voice.listVoices();
+```
+
+You can also provide a custom provider chain using names, `[name, options]` tuples, or factory functions:
+
+```ts
+import { VoiPi } from "voipi";
+
+// Using provider names
+const voice = new VoiPi({
+  providers: ["edge-tts", "macos"],
+});
+
+// Using [name, options] tuples for provider configuration
+const voice2 = new VoiPi({
+  providers: [["edge-tts", { voice: "en-US-GuyNeural" }], "macos"],
+});
+
+// Using factory functions for full control
+import { MacOS, EdgeTTS } from "voipi";
+
+const voice3 = new VoiPi({
+  providers: [() => new EdgeTTS({ voice: "en-US-GuyNeural" }), () => new MacOS()],
+});
 ```
 
 ### Language Detection
@@ -114,29 +168,6 @@ const seconds = estimateSpeechDuration("Hello world!", 1.0);
 // Post-synthesis: parse actual audio buffer (WAV/AIFF exact, MP3 estimated)
 const audio = await voice.toAudio("Hello world!"); // duration auto-populated
 console.log(audio.duration); // seconds
-```
-
-You can also provide a custom provider chain using names, `[name, options]` tuples, or factory functions:
-
-```ts
-import { VoiPi } from "voipi";
-
-// Using provider names
-const voice = new VoiPi({
-  providers: ["edge-tts", "macos"],
-});
-
-// Using [name, options] tuples for provider configuration
-const voice2 = new VoiPi({
-  providers: [["edge-tts", { voice: "en-US-GuyNeural" }], "macos"],
-});
-
-// Using factory functions for full control
-import { MacOS, EdgeTTS } from "voipi";
-
-const voice3 = new VoiPi({
-  providers: [() => new EdgeTTS({ voice: "en-US-GuyNeural" }), () => new MacOS()],
-});
 ```
 
 ## Providers
@@ -240,37 +271,6 @@ const voices = await voice.listVoices();
 ```
 
 > **Note:** Browser TTS plays audio directly and does not support `save()` or raw audio export.
-
-## MCP Server
-
-VoiPi includes a built-in [MCP](https://modelcontextprotocol.io/) server that exposes text-to-speech tools over the stdio transport. This lets AI agents and LLM clients (Claude Code, Cursor, etc.) speak text, save audio files, and list voices.
-
-Add VoiPi as an MCP server to your agent:
-
-```sh
-# Claude Code
-claude mcp add voipi -- npx -y voipi@latest mcp
-```
-
-```jsonc
-// .vscode/mcp.json
-{ "servers": { "voipi": { "command": "npx", "args": ["-y", "voipi@latest", "mcp"] } } }
-```
-
-```jsonc
-// .cursor/mcp.json
-{ "mcpServers": { "voipi": { "command": "npx", "args": ["-y", "voipi@latest", "mcp"] } } }
-```
-
-**Available tools:**
-
-| Tool          | Description                               |
-| ------------- | ----------------------------------------- |
-| `speak`       | Synthesize text and play through speakers |
-| `save`        | Synthesize text and save to a file        |
-| `list_voices` | List available voices for a provider      |
-
-All tools accept an optional `provider` parameter (`edge-tts`, `google-tts`, `piper`, `macos`, `espeak-ng`) and voice/language/rate options.
 
 ## Sponsors
 
