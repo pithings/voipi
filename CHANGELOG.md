@@ -1,6 +1,23 @@
 # Changelog
 
 
+## v0.0.7
+
+[compare changes](https://github.com/pithings/voipi/compare/v0.0.6...v0.0.7)
+
+### 🩹 Fixes
+
+- **mcp:** Make local voipi server compatible with Codex handshake ([b1b6af2](https://github.com/pithings/voipi/commit/b1b6af2))
+- Improve provider error and fallaback handling ([2b409c3](https://github.com/pithings/voipi/commit/2b409c3))
+
+### 💅 Refactors
+
+- Improve install ([c1c7a13](https://github.com/pithings/voipi/commit/c1c7a13))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+
 ## v0.0.6
 
 [compare changes](https://github.com/pithings/voipi/compare/v0.0.5...v0.0.6)
