@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.0.10
+
+[compare changes](https://github.com/pithings/voipi/compare/v0.0.9...v0.0.10)
+
+### 🩹 Fixes
+
+- Improve mcp install script ([84e2241](https://github.com/pithings/voipi/commit/84e2241))
+
+### 🏡 Chore
+
+- Apply automated updates ([05b1af6](https://github.com/pithings/voipi/commit/05b1af6))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+
 ## v0.0.9
 
 [compare changes](https://github.com/pithings/voipi/compare/v0.0.8...v0.0.9)
