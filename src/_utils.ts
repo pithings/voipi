@@ -4,6 +4,7 @@ interface NodeBuiltinMap {
   "node:fs/promises": typeof import("node:fs/promises");
   "node:os": typeof import("node:os");
   "node:path": typeof import("node:path");
+  "node:net": typeof import("node:net");
   "node:tls": typeof import("node:tls");
 }
 
@@ -21,6 +22,12 @@ export function exec(cmd: string, args: string[]): Promise<{ stdout: string; std
       else resolve({ stdout, stderr });
     });
   });
+}
+
+export function which(cmd: string): Promise<boolean> {
+  return exec("which", [cmd])
+    .then(() => true)
+    .catch(() => false);
 }
 
 function execPipe(cmd: string, args: string[], input: Buffer): Promise<void> {

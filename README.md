@@ -8,7 +8,7 @@ Give your apps, CLIs, and agents a voice. VoiPi is a universal, zero-dependency,
 
 - Pure JS, Zero deps, Less than 100kB total install size and 10kB bundled providers
 - No API keys required
-- **Multiple providers:** [Browser TTS](#browser-tts), [macOS](#macos), [Edge TTS](#edge-tts), [Google TTS](#google-tts), [Piper](#piper)
+- **Multiple providers:** [Browser TTS](#browser-tts), [macOS](#macos), [Edge TTS](#edge-tts), [Google TTS](#google-tts), [Piper](#piper), [eSpeak NG](#espeak-ng)
 - **Auto fallback:** Picks the best available provider per platform
 - **Auto language detection:** Detects script (Arabic, Farsi, CJK, Cyrillic, etc.) and Latin-script languages (French, Spanish, German, Portuguese, etc.) — picks the best voice automatically
 
@@ -47,7 +47,7 @@ npx voipi voices -p edge-tts
 
 ## Programmatic Usage
 
-`VoiPi` automatically picks the best available provider with fallback chain (macOS native → Edge TTS → Google TTS):
+`VoiPi` automatically picks the best available provider with fallback chain (macOS → Edge TTS → Google TTS → Piper → eSpeak NG):
 
 ```ts
 import { VoiPi } from "voipi";
@@ -182,7 +182,7 @@ await fr.speak("Bonjour le monde!");
 
 ### Piper
 
-Local neural TTS powered by [Piper](https://github.com/rhasspy/piper). 40+ languages, fully offline after first download. Uses an existing `piper` install if found in PATH, otherwise auto-installs a standalone binary (Linux x86_64/aarch64) or pip venv (macOS/Windows). Voice models (ONNX) are downloaded on demand from HuggingFace and cached locally.
+Local neural TTS powered by [Piper](https://github.com/OHF-Voice/piper1-gpl). 40+ languages, fully offline after first download. Uses an existing `piper` install if found in PATH, otherwise auto-installs a standalone binary (Linux x86_64/aarch64) or pip venv (macOS/Windows). Voice models (ONNX) are downloaded on demand from HuggingFace and cached locally.
 
 ```ts
 import { Piper } from "voipi/piper";
@@ -192,6 +192,26 @@ await voice.speak("Hello world!");
 
 // Custom voice, speed, and speaker
 const voice2 = new Piper({ voice: "en_US-lessac-medium", lengthScale: 0.8, speaker: 0 });
+await voice2.speak("Hello!");
+
+// List all available voices
+const voices = await voice.listVoices();
+```
+
+### eSpeak NG
+
+Local TTS using the [eSpeak NG](https://github.com/espeak-ng/espeak-ng) speech synthesizer. Requires `espeak-ng` installed on the system (available in KDE, etc). Supports 100+ languages with formant-based synthesis.
+
+**Note:** It produces robotic-sounding output, for natural-sounding voices, prefer [Piper](#piper) which uses neural TTS.
+
+```ts
+import { EspeakNG } from "voipi/espeak-ng";
+
+const voice = await EspeakNG.create();
+await voice.speak("Hello world!");
+
+// Custom voice and speed
+const voice2 = await EspeakNG.create({ voice: "en-us+f3", rate: 1.2 });
 await voice2.speak("Hello!");
 
 // List all available voices

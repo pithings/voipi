@@ -14,3 +14,5 @@ export type { GoogleTTSOptions } from "./providers/google-tts.ts";
 export { BrowserTTS } from "./providers/browser.ts";
 export { Piper } from "./providers/piper.ts";
 export type { PiperOptions } from "./providers/piper.ts";
+export { EspeakNG } from "./providers/espeak-ng.ts";
+export type { EspeakNGOptions } from "./providers/espeak-ng.ts";

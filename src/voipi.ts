@@ -28,17 +28,20 @@ export const providerMap: Record<
   piper: (opts) => import("./providers/piper.ts").then((m) => new m.Piper(opts)),
   "edge-tts": (opts) => import("./providers/edge-tts.ts").then((m) => new m.EdgeTTS(opts)),
   "google-tts": (opts) => import("./providers/google-tts.ts").then((m) => new m.GoogleTTS(opts)),
+  "espeak-ng": (opts) => import("./providers/espeak-ng.ts").then((m) => m.EspeakNG.create(opts)),
   browser: () => import("./providers/browser.ts").then((m) => new m.BrowserTTS()),
 };
 
 const _isDarwin = globalThis.process?.platform === "darwin";
+const _isLinux = globalThis.process?.platform === "linux";
 
-/** Default auto-detection chain: macOS (if darwin) → edge-tts → google-tts → piper */
+/** Default auto-detection chain: macOS (if darwin) → espeak-ng (if linux) → edge-tts → google-tts → piper */
 const _defaultProviders = [
   ...(_isDarwin ? [providerMap.macos!] : []),
   providerMap["edge-tts"]!,
   providerMap["google-tts"]!,
   providerMap.piper!,
+  ...(_isLinux ? [providerMap["espeak-ng"]!] : []),
 ] satisfies ProviderFactory[];
 
 export class VoiPi extends BaseVoiceProvider {

@@ -114,6 +114,7 @@ function initDemo() {
     "edge-tts": { import: "voipi/edge-tts", cls: "EdgeTTS" },
     "google-tts": { import: "voipi/google-tts", cls: "GoogleTTS" },
     piper: { import: "voipi/piper", cls: "Piper" },
+    "espeak-ng": { import: "voipi/espeak-ng", cls: "EspeakNG" },
     macos: { import: "voipi/macos", cls: "MacOS" },
   };
 

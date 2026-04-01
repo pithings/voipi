@@ -56,7 +56,9 @@ function wavDuration(buf: Buffer): number | undefined {
       buf[i + 2] === 0x74 && // 't'
       buf[i + 3] === 0x61 // 'a'
     ) {
-      dataSize = buf.readUInt32LE(i + 4);
+      const claimed = buf.readUInt32LE(i + 4);
+      // Clamp to actual remaining bytes (streaming encoders may write placeholder size)
+      dataSize = Math.min(claimed, buf.length - i - 8);
       break;
     }
   }
