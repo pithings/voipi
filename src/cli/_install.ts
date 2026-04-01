@@ -48,15 +48,7 @@ const AGENTS: Agent[] = [
     bin: "codex",
     install: (launcher) => {
       const sl = shellMcpLauncher(launcher);
-      return [
-        "codex",
-        "mcp",
-        "add",
-        "voipi",
-        "--",
-        sl.command,
-        ...sl.args,
-      ];
+      return ["codex", "mcp", "add", "voipi", "--", sl.command, ...sl.args];
     },
     remove: () => ["codex", "mcp", "remove", "voipi"],
   },
@@ -123,7 +115,9 @@ export async function installMCP(opts: { global: boolean }): Promise<void> {
   const path = getNodeBuiltin("node:path");
   const fsp = getNodeBuiltin("node:fs/promises");
 
-  const results = await Promise.all(AGENTS.map((agent) => _installAgent(agent, launcher, opts.global, { fsp, path })));
+  const results = await Promise.all(
+    AGENTS.map((agent) => _installAgent(agent, launcher, opts.global, { fsp, path })),
+  );
   let installed = 0;
 
   for (const { agent, ok, detail } of results) {
