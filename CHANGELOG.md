@@ -1,6 +1,23 @@
 # Changelog
 
 
+## v0.0.4
+
+[compare changes](https://github.com/pithings/voipi/compare/v0.0.3...v0.0.4)
+
+### 🚀 Enhancements
+
+- Add `espeak-ng` ([c5640ec](https://github.com/pithings/voipi/commit/c5640ec))
+- Mcp server ([c74d674](https://github.com/pithings/voipi/commit/c74d674))
+
+### 💅 Refactors
+
+- **piper:** Use higher quality defaults ([10ad3bd](https://github.com/pithings/voipi/commit/10ad3bd))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+
 ## v0.0.3
 
 [compare changes](https://github.com/pithings/voipi/compare/v0.0.2...v0.0.3)
