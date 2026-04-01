@@ -96,6 +96,8 @@ async function fetchChunk(url: string): Promise<ArrayBuffer> {
       "User-Agent":
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
     },
+  }).catch((error) => {
+    throw _formatGoogleError(error);
   });
   if (!res.ok) {
     throw new Error(`Google TTS request failed: ${res.status} ${res.statusText}`);
@@ -175,3 +177,21 @@ const LANGUAGES: [code: string, name: string][] = [
 ];
 
 const LANG_SET = new Set(LANGUAGES.map((l) => l[0]));
+
+function _formatGoogleError(error: unknown): Error {
+  const message = error instanceof Error ? error.message : String(error);
+  if (/getaddrinfo\s+EAI_AGAIN\s+translate\.google\.com/i.test(message)) {
+    return new Error(
+      "Google TTS DNS lookup failed for translate.google.com. Network access or DNS resolution is unavailable right now.",
+    );
+  }
+  if (/getaddrinfo\s+ENOTFOUND\s+translate\.google\.com/i.test(message)) {
+    return new Error(
+      "Google TTS could not resolve translate.google.com. Check DNS, firewall, or internet connectivity.",
+    );
+  }
+  if (/translate\.google\.com/i.test(message)) {
+    return new Error(`Google TTS network error: ${message}`);
+  }
+  return new Error(`Google TTS error: ${message}`);
+}

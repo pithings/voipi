@@ -178,14 +178,12 @@ async function _handleRequest(req: JsonRpcRequest): Promise<Record<string, unkno
   const { id, method, params } = req;
 
   switch (method) {
-    case "initialize":
-      {
-        const requestedVersion = params?.protocolVersion;
-        const protocolVersion =
-          typeof requestedVersion === "string" &&
-          SUPPORTED_PROTOCOL_VERSIONS.has(requestedVersion)
-            ? requestedVersion
-            : PROTOCOL_VERSION;
+    case "initialize": {
+      const requestedVersion = params?.protocolVersion;
+      const protocolVersion =
+        typeof requestedVersion === "string" && SUPPORTED_PROTOCOL_VERSIONS.has(requestedVersion)
+          ? requestedVersion
+          : PROTOCOL_VERSION;
       return _response(id, {
         protocolVersion,
         capabilities: CAPABILITIES,
@@ -193,7 +191,7 @@ async function _handleRequest(req: JsonRpcRequest): Promise<Record<string, unkno
         instructions:
           "Voice output to speak out loud. Use proactively — no need for the user to ask. Speak to announce completed tasks, alert on blockers, or talk casually. Keep it short and natural — clean plain text only (no markdown, URLs, or code). Always match the conversation language: set `lang` to the appropriate language code (e.g. `fa` for Persian, `fr` for French). For non-English languages, also pick a matching voice. Default to `wait: false` for fire-and-forget.",
       });
-      }
+    }
 
     case "ping":
       return _response(id, {});
@@ -242,22 +240,23 @@ async function _toolSpeak(args: Record<string, unknown>): Promise<unknown> {
   const wait = args.wait === true;
   const voipi = _createVoiPi(args.provider as string | undefined);
   const provider = await voipi.resolveProvider();
-  const opts = await _buildOpts(args, provider);
+  const opts = await _buildOpts(args, provider, Boolean(args.provider && args.provider !== "auto"));
 
   if (wait) {
-    await provider.speak(text, opts);
+    await voipi.speak(text, opts);
+    const actualProvider = await voipi.resolveProvider();
     return {
       content: [
         {
           type: "text",
-          text: `Playback finished for "${_truncate(text, 100)}" using ${provider.name}`,
+          text: `Playback finished for "${_truncate(text, 100)}" using ${actualProvider.name}`,
         },
       ],
     };
   }
 
   // Fire-and-forget: start playback but return immediately
-  const speakPromise = provider.speak(text, opts);
+  const speakPromise = voipi.speak(text, opts);
   speakPromise.catch(() => {}); // prevent unhandled rejection
   const duration = estimateSpeechDuration(text, (args.rate as number) ?? 1);
   return {
@@ -275,8 +274,9 @@ async function _toolSave(args: Record<string, unknown>): Promise<unknown> {
   const output = args.output as string;
   const voipi = _createVoiPi(args.provider as string | undefined);
   const provider = await voipi.resolveProvider();
-  const opts = await _buildOpts(args, provider);
-  const audio = await provider.synthesize(text, opts);
+  const opts = await _buildOpts(args, provider, Boolean(args.provider && args.provider !== "auto"));
+  const audio = await voipi.synthesize(text, opts);
+  const actualProvider = await voipi.resolveProvider();
   const fsp = getNodeBuiltin("node:fs/promises");
   await fsp.writeFile(output, audio.data);
   const duration = getAudioDuration(audio.data, audio.ext);
@@ -285,7 +285,7 @@ async function _toolSave(args: Record<string, unknown>): Promise<unknown> {
     content: [
       {
         type: "text",
-        text: `Saved to ${output} (${sizeKB}kB${duration ? `, ${duration.toFixed(1)}s` : ""})`,
+        text: `Saved to ${output} using ${actualProvider.name} (${sizeKB}kB${duration ? `, ${duration.toFixed(1)}s` : ""})`,
       },
     ],
   };
@@ -316,17 +316,22 @@ async function _toolListVoices(args: Record<string, unknown>): Promise<unknown> 
 async function _buildOpts(
   args: Record<string, unknown>,
   provider: { listVoices?(): Promise<Voice[]>; hasVoice?(id: string): boolean },
+  resolveProviderVoice = false,
 ): Promise<SpeakOptions> {
   const opts: SpeakOptions = {};
   if (args.lang) opts.lang = args.lang as string;
   if (args.rate) opts.rate = args.rate as number;
   if (args.voice) {
-    const voice = await resolveVoice(
-      args.voice as string,
-      provider.listVoices?.bind(provider),
-      provider.hasVoice?.bind(provider),
-    );
-    if (voice) opts.voice = voice;
+    if (resolveProviderVoice) {
+      const voice = await resolveVoice(
+        args.voice as string,
+        provider.listVoices?.bind(provider),
+        provider.hasVoice?.bind(provider),
+      );
+      if (voice) opts.voice = voice;
+    } else {
+      opts.voice = args.voice as string;
+    }
   }
   return opts;
 }

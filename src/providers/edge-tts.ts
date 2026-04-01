@@ -145,6 +145,8 @@ async function edgeSynthesize(
     host: "speech.platform.bing.com",
     origin: "chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold",
     "User-Agent": `Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${chromeMajor}.0.0.0 Safari/537.36 Edg/${chromeMajor}.0.0.0`,
+  }).catch((error) => {
+    throw _formatEdgeError(error);
   });
 
   return new Promise((resolve, reject) => {
@@ -177,7 +179,7 @@ async function edgeSynthesize(
     };
 
     socket.onerror = (err) => {
-      reject(new Error(`Edge TTS WebSocket error: ${err.message}`));
+      reject(_formatEdgeError(err));
     };
   });
 }
@@ -241,4 +243,23 @@ export function buildSsml(
     </prosody>
   </voice>
 </speak>`;
+}
+
+function _formatEdgeError(error: unknown): Error {
+  const message = error instanceof Error ? error.message : String(error);
+  if (/getaddrinfo\s+EAI_AGAIN\s+speech\.platform\.bing\.com/i.test(message)) {
+    return new Error(
+      "Edge TTS DNS lookup failed for speech.platform.bing.com. Network access or DNS resolution is unavailable right now.",
+    );
+  }
+  if (/getaddrinfo\s+ENOTFOUND\s+speech\.platform\.bing\.com/i.test(message)) {
+    return new Error(
+      "Edge TTS could not resolve speech.platform.bing.com. Check DNS, firewall, or internet connectivity.",
+    );
+  }
+  if (/speech\.platform\.bing\.com/i.test(message)) {
+    return new Error(`Edge TTS network error: ${message}`);
+  }
+  if (/WebSocket error/i.test(message)) return new Error(message);
+  return new Error(`Edge TTS error: ${message}`);
 }

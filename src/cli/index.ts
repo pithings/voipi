@@ -145,16 +145,18 @@ async function speak(voipi: VoiPi, text: string): Promise<void> {
     rate: values.rate ? Number(values.rate) : undefined,
   };
 
-  const provider = await voipi.resolveProvider();
+  const initialProvider = await voipi.resolveProvider();
 
-  const voice = await resolveVoice(
-    opts.voice,
-    provider.listVoices?.bind(provider),
-    provider.hasVoice?.bind(provider),
-  );
-  if (voice) opts.voice = voice;
+  if (values.provider && values.provider !== "auto") {
+    const voice = await resolveVoice(
+      opts.voice,
+      initialProvider.listVoices?.bind(initialProvider),
+      initialProvider.hasVoice?.bind(initialProvider),
+    );
+    if (voice) opts.voice = voice;
+  }
 
-  const defaults = provider.getDefaults();
+  const defaults = initialProvider.getDefaults();
   const overrides: Record<string, string | undefined> = {};
   if (opts.voice) overrides.voice = opts.voice;
   if (opts.lang) overrides.lang = opts.lang;
@@ -168,9 +170,9 @@ async function speak(voipi: VoiPi, text: string): Promise<void> {
 
   const bar = createProgress({ detail });
 
-  const synthEst = estimateSynthTime(provider.name, text);
-  bar?.start(`synthesizing with ${provider.name}`, synthEst, "synth");
-  const audio = await provider.synthesize(text, opts);
+  const synthEst = estimateSynthTime(initialProvider.name, text);
+  bar?.start(`synthesizing with ${initialProvider.name}`, synthEst, "synth");
+  const audio = await voipi.synthesize(text, opts);
   const sizeKB = (audio.data.length / 1024).toFixed(1);
 
   if (values.output) {

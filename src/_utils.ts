@@ -30,16 +30,49 @@ export function which(cmd: string): Promise<boolean> {
     .catch(() => false);
 }
 
-function execPipe(cmd: string, args: string[], input: Buffer): Promise<void> {
+function execPipe(
+  cmd: string,
+  args: string[],
+  input?: Buffer,
+  options?: { captureStderr?: boolean },
+): Promise<void> {
   const { spawn } = getNodeBuiltin("node:child_process");
   return new Promise((resolve, reject) => {
-    const child = spawn(cmd, args, { stdio: ["pipe", "ignore", "ignore"] });
-    child.on("error", reject);
-    child.on("close", (code) => {
-      if (code === 0) resolve();
-      else reject(new Error(`${cmd} exited with code ${code}`));
+    const child = spawn(cmd, args, {
+      stdio: ["pipe", "ignore", options?.captureStderr ? "pipe" : "ignore"],
     });
-    child.stdin.end(input);
+    let stderr = "";
+    let settled = false;
+
+    child.on("error", (error) => {
+      if (settled) return;
+      settled = true;
+      reject(error);
+    });
+    child.stderr?.on("data", (chunk: string | Buffer) => {
+      const text = typeof chunk === "string" ? chunk : chunk.toString("utf8");
+      stderr += text;
+      if (_isAudioBackendError(stderr)) {
+        child.kill("SIGTERM");
+      }
+    });
+    child.on("close", (code) => {
+      if (settled) return;
+      settled = true;
+      if (code === 0 && !_isAudioBackendError(stderr)) {
+        resolve();
+        return;
+      }
+      reject(new Error(_formatPlaybackError(cmd, code, stderr)));
+    });
+    const stdin = child.stdin;
+    if (!stdin) {
+      settled = true;
+      reject(new Error(`${cmd} stdin unavailable`));
+      return;
+    }
+    if (input) stdin.end(input);
+    else stdin.end();
   });
 }
 
@@ -72,7 +105,9 @@ export async function playAudio(
 ): Promise<void> {
   // Linux ffplay supports stdin — pipe buffer directly
   if ("data" in input && process.platform === "linux") {
-    return execPipe("ffplay", ["-nodisp", "-autoexit", "pipe:0"], input.data);
+    return execPipe("ffplay", ["-nodisp", "-autoexit", "pipe:0"], input.data, {
+      captureStderr: true,
+    });
   }
 
   // Resolve file path or write temp file
@@ -106,11 +141,39 @@ export async function playAudio(
         : process.platform === "linux"
           ? ["-nodisp", "-autoexit", filePath]
           : [filePath];
-    await exec(player, args);
+    if (process.platform === "linux") {
+      await execPipe(player, args, undefined, { captureStderr: true });
+    } else {
+      await exec(player, args);
+    }
   } finally {
     if (tmpFile) {
       const fsp = getNodeBuiltin("node:fs/promises");
       await fsp.unlink(tmpFile).catch(() => {});
     }
   }
+}
+
+// ---- internals ----
+
+function _isAudioBackendError(stderr: string): boolean {
+  return (
+    /pw_context_connect\(\) failed/i.test(stderr) ||
+    /pa_context_connect\(\) failed/i.test(stderr) ||
+    /pa_write\(\) failed/i.test(stderr) ||
+    /connection refused/i.test(stderr) ||
+    /operation not permitted/i.test(stderr)
+  );
+}
+
+function _formatPlaybackError(cmd: string, code: number | null, stderr: string): string {
+  const detail = stderr
+    .trim()
+    .split("\n")
+    .map((line) => line.trim())
+    .find((line) => line.length > 0 && _isAudioBackendError(line));
+
+  if (detail) return `Audio playback unavailable: ${detail}`;
+  if (stderr.trim()) return `${cmd} failed: ${stderr.trim()}`;
+  return code == null ? `${cmd} failed` : `${cmd} exited with code ${code}`;
 }

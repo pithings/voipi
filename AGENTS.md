@@ -7,12 +7,12 @@
 - `src/types.ts` — Core interfaces (`SpeakOptions`, `Voice`)
 - `src/_provider.ts` — `BaseVoiceProvider` abstract class with `AudioData` type. Subclasses implement `synthesize()`, base handles `speak()`, `save()`, `toAudio()`
 - `src/_audio.ts` — Audio duration utilities: `getAudioDuration(data, ext)` (parses WAV/AIFF headers, estimates MP3 from bitrate), `estimateSpeechDuration(text, rate)` (pre-synthesis ~150 WPM heuristic)
-- `src/_utils.ts` — Shared helpers: `getNodeBuiltin()` (safe `node:` access via `getBuiltinModule`), `exec()`, `playAudio()` (cross-platform: `afplay`/`ffplay`/PowerShell), `resolveVoice()` (prioritized voice list matching)
+- `src/_utils.ts` — Shared helpers: `getNodeBuiltin()` (safe `node:` access via `getBuiltinModule`), `exec()`, `playAudio()` (cross-platform: `afplay`/`ffplay`/PowerShell; Linux surfaces backend permission/connection failures), `resolveVoice()` (prioritized voice list matching)
 - `src/_ws.ts` — Zero-dep WebSocket client over `node:tls` (used by Edge TTS for custom headers). Handles framing, masking, ping/pong
 - `src/voipi.ts` — `VoiPi` class: auto-selecting provider with fallback chain (macOS → Edge TTS → Google TTS → Piper → eSpeak NG). Lazy-resolves on first call
 - `src/providers/` — Provider implementations
 - `src/cli/index.ts` — CLI entrypoint (`voipi speak`, `voipi voices`, `voipi mcp`, `--provider` flag, default: `auto`)
-- `src/cli/_mcp.ts` — Zero-dependency JSON-RPC stdio MCP server exposing `speak`, `save`, and `list_voices`; uses standard MCP `Content-Length` framing on stdio
+- `src/cli/_mcp.ts` — Zero-dependency JSON-RPC stdio MCP server exposing `speak`, `save`, and `list_voices`; auto-detects newline-delimited JSON vs standard MCP `Content-Length` framing on stdio
 - `src/cli/_utils.ts` — CLI internals: progress bar, synthesis time estimation, logo rendering
 - `src/index.ts` — Public API re-exports (types + all providers)
 
@@ -45,7 +45,7 @@ Providers are exported from both the main entry (`voipi`) and as subpath exports
 
 - **No `node:` imports at top level** — all Node.js builtins accessed via `getNodeBuiltin()` which uses `globalThis.process?.getBuiltinModule()`. This avoids bundler issues and enables runtime detection.
 - **Voice resolution** — `resolveVoice()` supports `string | string[]`. Fast path: sync `hasVoice()` check. Slow path: `listVoices()` + Set lookup. Falls back to first entry.
-- **Audio playback** — `playAudio()` handles `{data, ext}` or `{path}`. Linux: pipes to `ffplay` stdin. macOS: `afplay`. Windows: PowerShell `SoundPlayer`. Temp files cleaned up in `finally`.
+- **Audio playback** — `playAudio()` handles `{data, ext}` or `{path}`. Linux uses `ffplay`; backend permission/connection failures are surfaced so MCP callers do not get false-positive playback success. macOS: `afplay`. Windows: PowerShell `SoundPlayer`. Temp files cleaned up in `finally`.
 - **Audio duration** — `AudioData.duration` auto-populated by `toAudio()`. WAV/AIFF: exact from headers. MP3: estimated from first frame bitrate (fallback 48kbps). Pre-synthesis estimate via `estimateSpeechDuration()` (~150 WPM heuristic).
 - **WebSocket** (`_ws.ts`) — Custom minimal WS implementation over `node:tls`. Supports text send, binary receive, ping/pong. Used instead of `ws` package to enable custom headers without dependencies.
 
