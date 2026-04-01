@@ -11,7 +11,8 @@
 - `src/_ws.ts` — Zero-dep WebSocket client over `node:tls` (used by Edge TTS for custom headers). Handles framing, masking, ping/pong
 - `src/voipi.ts` — `VoiPi` class: auto-selecting provider with fallback chain (macOS → Edge TTS → Google TTS → Piper → eSpeak NG). Lazy-resolves on first call
 - `src/providers/` — Provider implementations
-- `src/cli/index.ts` — CLI entrypoint (`voipi speak`, `voipi voices`, `--provider` flag, default: `auto`)
+- `src/cli/index.ts` — CLI entrypoint (`voipi speak`, `voipi voices`, `voipi mcp`, `--provider` flag, default: `auto`)
+- `src/cli/_mcp.ts` — Zero-dependency JSON-RPC stdio MCP server exposing `speak`, `save`, and `list_voices`
 - `src/cli/_utils.ts` — CLI internals: progress bar, synthesis time estimation, logo rendering
 - `src/index.ts` — Public API re-exports (types + all providers)
 

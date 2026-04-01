@@ -11,7 +11,7 @@ Give your apps, CLIs, and agents a voice. VoiPi is a universal, zero-dependency,
 - **Multiple providers:** [Browser TTS](#browser-tts), [macOS](#macos), [Edge TTS](#edge-tts), [Google TTS](#google-tts), [Piper](#piper), [eSpeak NG](#espeak-ng)
 - **Auto fallback:** Picks the best available provider per platform
 - **Auto language detection:** Detects script (Arabic, Farsi, CJK, Cyrillic, etc.) and Latin-script languages (French, Spanish, German, Portuguese, etc.) — picks the best voice automatically
-- **[MCP Server](#mcp-server):** Give AI agents a voice — works with Claude Code, Cursor, and any MCP client
+- **[MCP Server](#mcp-server):** Give AI agents a voice — auto install with Claude Code, Codex, Cursor, Windsurf, OpenCode and Pi.
 
 ## Demo
 
@@ -27,17 +27,17 @@ You can use `voipi` directly with npx/pnpx/bunx.
 
 ```sh
 # Speak text (auto-selects best available provider)
-npx voipi "The quick brown fox jumps over the lazy dog"
-npx voipi speak "Hello world"
+npx voipi 'The quick brown fox jumps over the lazy dog'
+npx voipi speak 'Hello world'
 
 # Choose a specific voice and speed
-npx voipi "Hi" -v en-US-BrianNeural -r 1.5
+npx voipi 'Hi' -v en-US-BrianNeural -r 1.5
 
 # Save to file instead of playing
-npx voipi speak "Hi" -o hello.mp3
+npx voipi speak 'Hi' -o hello.mp3
 
 # Use a specific provider
-npx voipi "Bonjour le monde" -p edge-tts -v fr-FR-DeniseNeural
+npx voipi 'Bonjour le monde' -p edge-tts -v fr-FR-DeniseNeural
 
 # List available voices
 npx voipi voices
@@ -51,42 +51,13 @@ npx voipi mcp
 
 ## MCP Server
 
-VoiPi includes a built-in [MCP](https://modelcontextprotocol.io/) server that exposes text-to-speech tools over the stdio transport. This lets AI agents and LLM clients (Claude Code, Cursor, etc.) speak text, save audio files, and list voices.
+VoiPi includes a built-in [MCP](https://modelcontextprotocol.io/) server that exposes text-to-speech tools over the stdio transport. This lets AI agents and LLM clients speak text, save audio files, and list voices.
 
-Add VoiPi as an MCP server to your agent:
+Auto-install to all detected agents:
 
 ```sh
-# Claude Code
-claude mcp add voipi -- npx -y voipi@latest mcp
-
-# Codex
-codex mcp add voipi -- npx -y voipi@latest mcp
+npx voipi@latest mcp --install
 ```
-
-```jsonc
-// .vscode/mcp.json
-{ "servers": { "voipi": { "command": "npx", "args": ["-y", "voipi@latest", "mcp"] } } }
-```
-
-```jsonc
-// .cursor/mcp.json
-{ "mcpServers": { "voipi": { "command": "npx", "args": ["-y", "voipi@latest", "mcp"] } } }
-```
-
-```jsonc
-// opencode.json
-{ "mcp": { "voipi": { "type": "local", "command": ["npx", "-y", "voipi@latest", "mcp"] } } }
-```
-
-**Available tools:**
-
-| Tool          | Description                               |
-| ------------- | ----------------------------------------- |
-| `speak`       | Synthesize text and play through speakers |
-| `save`        | Synthesize text and save to a file        |
-| `list_voices` | List available voices for a provider      |
-
-All tools accept an optional `provider` parameter (`edge-tts`, `google-tts`, `piper`, `macos`, `espeak-ng`) and voice/language/rate options.
 
 ## Programmatic Usage
 

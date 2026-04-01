@@ -568,61 +568,32 @@ pre .op {
   color: var(--text-muted);
   margin-bottom: 0.5rem;
 }
-.mcp-tabs {
-  display: inline-flex;
-  gap: 1px;
-  margin-bottom: -1px;
-  position: relative;
-  z-index: 1;
-}
-.mcp-tab {
-  background: transparent;
+.mcp-install {
+  background: var(--code-bg);
   border: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  color: var(--text-muted);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
   font-family: var(--mono);
-  font-size: 0.7rem;
-  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
   cursor: pointer;
-  transition: all 0.15s;
-}
-.mcp-tab:first-child {
-  border-radius: 6px 0 0 0;
-}
-.mcp-tab:last-child {
-  border-radius: 0 6px 0 0;
-}
-.mcp-tab:not(:first-child) {
-  border-left: none;
-}
-.mcp-tab:hover {
+  position: relative;
   color: var(--text);
 }
-.mcp-tab.active {
-  background: var(--code-bg);
-  color: var(--accent);
-  border-bottom-color: var(--code-bg);
-}
-.mcp-panels {
-  position: relative;
-}
-.mcp-panel {
-  display: none;
-  margin: 0;
-  font-size: 0.75rem;
-  cursor: pointer;
-  white-space: pre-wrap;
-  word-break: break-all;
-  border-top-left-radius: 0;
-  position: relative;
-}
-.mcp-panel.active {
-  display: block;
-}
-.mcp-panel:hover {
+.mcp-install:hover {
   border-color: var(--accent);
 }
-.mcp-panel .copied {
+.mcp-install .prefix {
+  color: var(--text-muted);
+  user-select: none;
+}
+.mcp-install .cmd-bin {
+  color: var(--accent);
+  font-weight: 600;
+}
+.mcp-install .cmd-arg {
+  color: var(--text-muted);
+}
+.mcp-install .copied {
   position: absolute;
   right: 1rem;
   top: 0.75rem;
@@ -631,8 +602,16 @@ pre .op {
   opacity: 0;
   transition: opacity 0.2s;
 }
-.mcp-panel .copied.show {
+.mcp-install .copied.show {
   opacity: 1;
+}
+.mcp-hint {
+  display: block;
+  font-size: 10px;
+  color: var(--text-muted);
+  margin: 4px 0 0;
+  padding-left: 0.75rem;
+  user-select: none;
 }
 
 /* Footer */

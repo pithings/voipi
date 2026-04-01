@@ -7,6 +7,7 @@ import { VoiPi, providerMap } from "../voipi.ts";
 import { createProgress, estimateSynthTime } from "./_progress.ts";
 import { logo } from "./_logo.ts";
 import { serveMCP } from "./_mcp.ts";
+import { installMCP } from "./_install.ts";
 
 const providerNames = ["auto", ...Object.keys(providerMap)];
 
@@ -17,7 +18,7 @@ function usage(): void {
 Usage:
   voipi speak <text> [-v|--voice <name>] [-l|--lang <code>] [-r|--rate <n>] [-o|--output <file>] [-p|--provider <name>]
   voipi voices [-p|--provider <name>]
-  voipi mcp
+  voipi mcp [--install] [--no-global]
   voipi --help
 
 Providers: ${providerNames.map((n) => (n === "auto" ? "auto (default)" : n)).join(", ")}`);
@@ -40,6 +41,7 @@ ${o}Usage:${r}
   ${y}voipi speak${r} ${d}<text>${r} ${d}[-v|--voice <name>] [-l|--lang <code>] [-r|--rate <n>] [-o|--output <file>] [-p|--provider <name>]${r}
   ${y}voipi voices${r} ${d}[-p|--provider <name>]${r}
   ${y}voipi mcp${r} ${d}— start MCP stdio server${r}
+  ${y}voipi mcp --install${r} ${d}— install MCP server to detected agents (global by default)${r}
   ${y}voipi${r} ${d}--help${r}
 
 ${o}Providers:${r} ${providers}`);
@@ -92,8 +94,11 @@ const { values, positionals } = parseArgs({
     rate: { type: "string", short: "r" },
     output: { type: "string", short: "o" },
     provider: { type: "string", short: "p" },
+    install: { type: "boolean" },
+    global: { type: "boolean", short: "g", default: true },
   },
   allowPositionals: true,
+  allowNegative: true,
 });
 
 const command = positionals[0];
@@ -121,6 +126,10 @@ async function main(): Promise<void> {
   } else if (command === "voices") {
     await showVoices(voipi);
   } else if (command === "mcp") {
+    if (values.install) {
+      await installMCP({ global: values.global !== false });
+      return;
+    }
     await serveMCP();
   } else {
     // Treat unknown command as text for speak

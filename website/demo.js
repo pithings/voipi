@@ -129,20 +129,22 @@ function initDemo() {
     const rate = rateInput.value;
     const output = outputInput.value.trim();
     const text = textInput.value;
-    const textQuoted = `"${text}"`;
+    const cliTextQuoted = `'${text.replace(/'/g, "'\\''")}'`;
+    const textQuoted = `"${text.replace(/"/g, '\\"')}"`;
+
 
     // CLI command
     let flags = "";
     if (provider !== "auto") flags += ` -p ${provider}`;
     if (voice) {
       const needsQuotes = voice.includes(" ");
-      flags += ` -v ${needsQuotes ? `"${voice}"` : voice}`;
+      flags += ` -v ${needsQuotes ? `'${voice}'` : voice}`;
     }
     if (lang && lang !== "auto") flags += ` -l ${lang}`;
     if (rate) flags += ` -r ${rate}`;
     if (output) flags += ` -o ${output}`;
     const codeEl = installEl.querySelector("code");
-    codeEl.innerHTML = `<span class="prefix">$</span> ${runner} <span class="cmd-bin">voipi</span>${flags} <span class="cmd-arg">${textQuoted}</span>`;
+    codeEl.innerHTML = `<span class="prefix">$</span> ${runner} <span class="cmd-bin">voipi</span>${flags} <span class="cmd-arg">${cliTextQuoted}</span>`;
 
     // JS snippet
     const { import: mod, cls } = providerMeta[provider] || providerMeta.auto;
