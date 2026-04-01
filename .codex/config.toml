@@ -1,0 +1,7 @@
+[mcp_servers.voipi]
+command = "node"
+args = ["./src/cli/index.ts", "mcp"]
+cwd = "/home/pooya/Code/voipi"
+
+[mcp_servers.voipi.tools.speak]
+approval_mode = "approve"

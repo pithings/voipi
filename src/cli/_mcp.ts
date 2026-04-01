@@ -5,6 +5,7 @@ import { getAudioDuration, estimateSpeechDuration } from "../_audio.ts";
 import pkg from "../../package.json" with { type: "json" };
 
 const PROTOCOL_VERSION = "2025-06-18";
+const SUPPORTED_PROTOCOL_VERSIONS = new Set(["2024-11-05", "2025-03-26", "2025-06-18"]);
 const SERVER_INFO = { name: pkg.name, version: pkg.version };
 
 const CAPABILITIES = {
@@ -71,21 +72,23 @@ const TOOLS = [
 ];
 
 export async function serveMCP(): Promise<void> {
-  let buffer = "";
+  let buffer = Buffer.alloc(0);
+  let queue = Promise.resolve();
+  let outputMode: "line" | "framed" = "line";
 
-  for await (const chunk of process.stdin) {
-    buffer += chunk;
-    let newline: number;
-    while ((newline = buffer.indexOf("\n")) !== -1) {
-      const line = buffer.slice(0, newline).trim();
-      buffer = buffer.slice(newline + 1);
-      if (!line) continue;
+  const drain = async (flush = false): Promise<void> => {
+    while (true) {
+      const frame = _readFrame(buffer, flush);
+      if (!frame) break;
+      buffer = buffer.subarray(frame.bytesConsumed);
+      outputMode = frame.mode;
+      if (!frame.body.trim()) continue;
 
       let msg: JsonRpcMessage;
       try {
-        msg = JSON.parse(line);
+        msg = JSON.parse(frame.body);
       } catch {
-        _send(_errorResponse(null, -32700, "Parse error"));
+        _send(_errorResponse(null, -32700, "Parse error"), outputMode);
         continue;
       }
 
@@ -93,11 +96,40 @@ export async function serveMCP(): Promise<void> {
 
       if ("id" in msg) {
         const result = await _handleRequest(msg as JsonRpcRequest);
-        _send(result);
+        _send(result, outputMode);
       }
-      // notifications — no response needed
     }
-  }
+  };
+
+  await new Promise<void>((resolve, reject) => {
+    const readBuffered = () => {
+      const chunks: Buffer[] = [];
+      let chunk: string | Buffer | null;
+      while ((chunk = process.stdin.read() as string | Buffer | null) !== null) {
+        chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : Buffer.from(chunk));
+      }
+      if (chunks.length === 0) return;
+
+      const data = Buffer.concat(chunks);
+      queue = queue.then(async () => {
+        buffer = Buffer.concat([buffer, data]);
+        await drain();
+      });
+    };
+
+    process.stdin.on("readable", readBuffered);
+
+    process.stdin.on("end", () => {
+      queue.then(() => drain(true)).then(resolve, reject);
+    });
+
+    process.stdin.on("error", reject);
+    readBuffered();
+    if (process.stdin.readableEnded) {
+      queue.then(() => drain(true)).then(resolve, reject);
+      return;
+    }
+  });
 }
 
 // ---- internals ----
@@ -114,8 +146,13 @@ interface JsonRpcRequest extends JsonRpcMessage {
   method: string;
 }
 
-function _send(msg: Record<string, unknown>): void {
-  process.stdout.write(JSON.stringify(msg) + "\n");
+function _send(msg: Record<string, unknown>, mode: "line" | "framed"): void {
+  const body = JSON.stringify(msg);
+  process.stdout.write(
+    mode === "framed"
+      ? `Content-Length: ${Buffer.byteLength(body, "utf8")}\r\n\r\n${body}`
+      : `${body}\n`,
+  );
 }
 
 function _response(id: string | number | null, result: unknown): Record<string, unknown> {
@@ -142,13 +179,21 @@ async function _handleRequest(req: JsonRpcRequest): Promise<Record<string, unkno
 
   switch (method) {
     case "initialize":
+      {
+        const requestedVersion = params?.protocolVersion;
+        const protocolVersion =
+          typeof requestedVersion === "string" &&
+          SUPPORTED_PROTOCOL_VERSIONS.has(requestedVersion)
+            ? requestedVersion
+            : PROTOCOL_VERSION;
       return _response(id, {
-        protocolVersion: PROTOCOL_VERSION,
+        protocolVersion,
         capabilities: CAPABILITIES,
         serverInfo: SERVER_INFO,
         instructions:
           "Voice output to speak out loud. Use proactively — no need for the user to ask. Speak to announce completed tasks, alert on blockers, or talk casually. Keep it short and natural — clean plain text only (no markdown, URLs, or code). Always match the conversation language: set `lang` to the appropriate language code (e.g. `fa` for Persian, `fr` for French). For non-English languages, also pick a matching voice. Default to `wait: false` for fire-and-forget.",
       });
+      }
 
     case "ping":
       return _response(id, {});
@@ -202,7 +247,12 @@ async function _toolSpeak(args: Record<string, unknown>): Promise<unknown> {
   if (wait) {
     await provider.speak(text, opts);
     return {
-      content: [{ type: "text", text: `Spoke "${_truncate(text, 100)}" using ${provider.name}` }],
+      content: [
+        {
+          type: "text",
+          text: `Playback finished for "${_truncate(text, 100)}" using ${provider.name}`,
+        },
+      ],
     };
   }
 
@@ -283,4 +333,71 @@ async function _buildOpts(
 
 function _truncate(str: string, max: number): string {
   return str.length > max ? str.slice(0, max - 1) + "…" : str;
+}
+
+function _readFrame(
+  buffer: Buffer,
+  flush = false,
+): { body: string; bytesConsumed: number; mode: "line" | "framed" } | null {
+  const header = _readHeader(buffer);
+  if (header) {
+    const { headerEnd, separatorLength, contentLength } = header;
+    const bodyStart = headerEnd + separatorLength;
+    const frameEnd = bodyStart + contentLength;
+    if (buffer.length < frameEnd) return null;
+    return {
+      body: buffer.subarray(bodyStart, frameEnd).toString("utf8"),
+      bytesConsumed: frameEnd,
+      mode: "framed",
+    };
+  }
+
+  const newline = buffer.indexOf("\n");
+  if (newline === -1) {
+    if (!flush || buffer.length === 0) return null;
+    return { body: buffer.toString("utf8"), bytesConsumed: buffer.length, mode: "line" };
+  }
+
+  const line = buffer.slice(0, newline).toString("utf8").trim();
+  if (!line) return { body: "", bytesConsumed: newline + 1, mode: "line" };
+  if (!line.startsWith("{")) return null;
+  return { body: line, bytesConsumed: newline + 1, mode: "line" };
+}
+
+function _readHeader(
+  buffer: Buffer,
+): { headerEnd: number; separatorLength: number; contentLength: number } | null {
+  const crlfIndex = buffer.indexOf("\r\n\r\n");
+  const lfIndex = buffer.indexOf("\n\n");
+
+  let headerEnd = -1;
+  let separatorLength = 0;
+  if (crlfIndex !== -1 && (lfIndex === -1 || crlfIndex < lfIndex)) {
+    headerEnd = crlfIndex;
+    separatorLength = 4;
+  } else if (lfIndex !== -1) {
+    headerEnd = lfIndex;
+    separatorLength = 2;
+  } else {
+    return null;
+  }
+
+  const headerText = buffer.subarray(0, headerEnd).toString("utf8");
+  const lines = headerText.split(/\r?\n/);
+  let contentLength: number | null = null;
+
+  for (const line of lines) {
+    const sep = line.indexOf(":");
+    if (sep === -1) continue;
+    const key = line.slice(0, sep).trim().toLowerCase();
+    const value = line.slice(sep + 1).trim();
+    if (key === "content-length") {
+      const parsed = Number.parseInt(value, 10);
+      if (!Number.isFinite(parsed) || parsed < 0) return null;
+      contentLength = parsed;
+    }
+  }
+
+  if (contentLength == null) return null;
+  return { headerEnd, separatorLength, contentLength };
 }
