@@ -132,7 +132,6 @@ function initDemo() {
     const cliTextQuoted = `'${text.replace(/'/g, "'\\''")}'`;
     const textQuoted = `"${text.replace(/"/g, '\\"')}"`;
 
-
     // CLI command
     let flags = "";
     if (provider !== "auto") flags += ` -p ${provider}`;
