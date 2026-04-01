@@ -1,6 +1,22 @@
 # Changelog
 
 
+## v0.0.6
+
+[compare changes](https://github.com/pithings/voipi/compare/v0.0.5...v0.0.6)
+
+### 🚀 Enhancements
+
+- Add pi extension ([8ff041c](https://github.com/pithings/voipi/commit/8ff041c))
+
+### 💅 Refactors
+
+- Improve mcp instructions ([02d5a48](https://github.com/pithings/voipi/commit/02d5a48))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+
 ## v0.0.5
 
 [compare changes](https://github.com/pithings/voipi/compare/v0.0.4...v0.0.5)
