@@ -147,7 +147,7 @@ async function _handleRequest(req: JsonRpcRequest): Promise<Record<string, unkno
         capabilities: CAPABILITIES,
         serverInfo: SERVER_INFO,
         instructions:
-          "Text-to-speech tools. When preparing text for speech: use short, simple sentences; strip markdown, URLs, code blocks, and special characters; expand abbreviations; write numbers as words. The goal is short natural-sounding spoken output.",
+          "Voice output to speak out loud. Use proactively — no need for the user to ask. Speak to announce completed tasks, alert on blockers, or talk casually. Keep it short and natural — clean plain text only (no markdown, URLs, or code). Always match the conversation language: set `lang` to the appropriate language code (e.g. `fa` for Persian, `fr` for French). For non-English languages, also pick a matching voice. Default to `wait: false` for fire-and-forget.",
       });
 
     case "ping":
