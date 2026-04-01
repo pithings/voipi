@@ -1,6 +1,23 @@
 # Changelog
 
 
+## v0.0.8
+
+[compare changes](https://github.com/pithings/voipi/compare/v0.0.7...v0.0.8)
+
+### 🩹 Fixes
+
+- **cli:** Handle pnpx mcp install ([3082903](https://github.com/pithings/voipi/commit/3082903))
+- **cli:** Omit -y for bunx launcher ([3c55bc0](https://github.com/pithings/voipi/commit/3c55bc0))
+
+### 🤖 CI
+
+- Build before typecheck ([e005141](https://github.com/pithings/voipi/commit/e005141))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+
 ## v0.0.7
 
 [compare changes](https://github.com/pithings/voipi/compare/v0.0.6...v0.0.7)
