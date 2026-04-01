@@ -12,7 +12,7 @@ import { providerMap } from "../src/voipi.ts";
 const ROOT = new URL("..", import.meta.url).pathname;
 const SAMPLES_DIR = join(ROOT, "website/samples");
 const TEXT =
-  "VoiPi gives your computer a voice. It can detect language and works with Edge, Google, Piper, eSpeak NG, and MacOS engines, all free.";
+  "VoiPi is a free and zero-dependency text-to-speech library for JavaScript. It auto-detects languages and picks the best voice across six providers.";
 
 // Skip browser provider (requires DOM)
 const ALL_PROVIDERS = ["macos", "piper", "edge-tts", "google-tts", "espeak-ng"] as const;
@@ -49,9 +49,14 @@ for (const name of PROVIDERS) {
     }
 
     // Convert to mp4 (silent video + audio) for GitHub README inline playback
-    console.log(`[${name}] Converting to mp4...`);
+    // Use ffprobe to get exact audio duration (parsed durations like MP3 can be inaccurate)
+    const dur =
+      execSync(`ffprobe -v error -show_entries format=duration -of csv=p=0 "${tmpPath}"`, {
+        encoding: "utf-8",
+      }).trim() || "60";
+    console.log(`[${name}] Converting to mp4 (${dur}s)...`);
     execSync(
-      `ffmpeg -y -f lavfi -i color=c=black:s=2x2:r=1 -i "${tmpPath}" -shortest -c:v libx264 -tune stillimage -c:a aac -b:a 64k -ac 1 "${mp4Path}"`,
+      `ffmpeg -y -f lavfi -t ${dur} -i color=c=black:s=2x2:r=1 -i "${tmpPath}" -shortest -c:v libx264 -tune stillimage -c:a aac -b:a 64k -ac 1 "${mp4Path}"`,
       { stdio: "pipe" },
     );
 
