@@ -27,68 +27,86 @@ const AGENTS: Agent[] = [
   {
     name: "Claude Code",
     bin: "claude",
-    install: (launcher, global) => [
-      "claude",
-      "mcp",
-      "add",
-      "voipi",
-      "-s",
-      global ? "user" : "local",
-      "--",
-      launcher.command,
-      ...launcher.args,
-    ],
+    install: (launcher, global) => {
+      const sl = shellMcpLauncher(launcher);
+      return [
+        "claude",
+        "mcp",
+        "add",
+        "voipi",
+        "-s",
+        global ? "user" : "local",
+        "--",
+        sl.command,
+        ...sl.args,
+      ];
+    },
     remove: (global) => ["claude", "mcp", "remove", "voipi", "-s", global ? "user" : "local"],
   },
   {
     name: "Codex",
     bin: "codex",
-    install: (launcher) => [
-      "codex",
-      "mcp",
-      "add",
-      "voipi",
-      "--",
-      launcher.command,
-      ...launcher.args,
-    ],
+    install: (launcher) => {
+      const sl = shellMcpLauncher(launcher);
+      return [
+        "codex",
+        "mcp",
+        "add",
+        "voipi",
+        "--",
+        sl.command,
+        ...sl.args,
+      ];
+    },
     remove: () => ["codex", "mcp", "remove", "voipi"],
   },
   {
     name: "Cursor",
     bin: "cursor",
-    json: (launcher, global) => ({
-      path: _configPath(global ? "~/.cursor/mcp.json" : ".cursor/mcp.json"),
-      build: () => ({ mcpServers: { voipi: { command: launcher.command, args: launcher.args } } }),
-    }),
+    json: (launcher, global) => {
+      const sl = shellMcpLauncher(launcher);
+      return {
+        path: _configPath(global ? "~/.cursor/mcp.json" : ".cursor/mcp.json"),
+        build: () => ({ mcpServers: { voipi: { command: sl.command, args: sl.args } } }),
+      };
+    },
   },
   {
     name: "Windsurf",
     bin: "windsurf",
-    json: (launcher, global) => ({
-      path: _configPath(global ? "~/.windsurf/mcp.json" : ".windsurf/mcp.json"),
-      build: () => ({ mcpServers: { voipi: { command: launcher.command, args: launcher.args } } }),
-    }),
+    json: (launcher, global) => {
+      const sl = shellMcpLauncher(launcher);
+      return {
+        path: _configPath(global ? "~/.windsurf/mcp.json" : ".windsurf/mcp.json"),
+        build: () => ({ mcpServers: { voipi: { command: sl.command, args: sl.args } } }),
+      };
+    },
   },
   {
     name: "OpenCode",
     bin: "opencode",
-    json: (launcher, global) => ({
-      path: _configPath(global ? "~/.config/opencode/.opencode.json" : "opencode.json"),
-      build: () => ({
-        mcp: { voipi: { type: "local", command: [launcher.command, ...launcher.args] } },
-      }),
-    }),
+    json: (launcher, global) => {
+      const sl = shellMcpLauncher(launcher);
+      return {
+        path: _configPath(global ? "~/.config/opencode/.opencode.json" : "opencode.json"),
+        build: () => ({
+          mcp: { voipi: { type: "local", command: [sl.command, ...sl.args] } },
+        }),
+      };
+    },
   },
   {
     name: "Pi",
     bin: "pi",
     install: () => ["pi", "install", "npm:pi-mcp-adapter"],
     installCheck: () => _hasPiPackage("npm:pi-mcp-adapter"),
-    json: (launcher, global) => ({
-      path: _configPath(global ? "~/.pi/agent/mcp.json" : ".pi/mcp.json"),
-      build: () => ({ mcpServers: { voipi: { command: launcher.command, args: launcher.args } } }),
-    }),
+    json: (launcher, global) => {
+      const sl = shellMcpLauncher(launcher);
+      return {
+        path: _configPath(global ? "~/.pi/agent/mcp.json" : ".pi/mcp.json"),
+        build: () => ({ mcpServers: { voipi: { command: sl.command, args: sl.args } } }),
+      };
+    },
   },
 ];
 
@@ -105,56 +123,16 @@ export async function installMCP(opts: { global: boolean }): Promise<void> {
   const path = getNodeBuiltin("node:path");
   const fsp = getNodeBuiltin("node:fs/promises");
 
+  const results = await Promise.all(AGENTS.map((agent) => _installAgent(agent, launcher, opts.global, { fsp, path })));
   let installed = 0;
 
-  for (const agent of AGENTS) {
-    if (!(await which(agent.bin))) continue;
-
-    // CLI-based install
-    if (agent.install && !(await agent.installCheck?.())) {
-      const args = agent.install(launcher, opts.global);
-      try {
-        await exec(args[0]!, args.slice(1));
-        if (!agent.json) {
-          console.log(`${g}✓${r} ${b}${agent.name}${r} ${d}(${agent.bin})${r}`);
-          installed++;
-        }
-      } catch {
-        if (agent.remove) {
-          try {
-            const rm = agent.remove(opts.global);
-            await exec(rm[0]!, rm.slice(1)).catch(() => {});
-            await exec(args[0]!, args.slice(1));
-            if (!agent.json) {
-              console.log(`${g}✓${r} ${b}${agent.name}${r} ${d}(${agent.bin})${r}`);
-              installed++;
-            }
-          } catch {
-            if (!agent.json) console.log(`${d}✗ ${agent.name}${r}`);
-          }
-        } else if (!agent.json) {
-          console.log(`${d}✗ ${agent.name}${r}`);
-        }
-      }
-      if (!agent.json) continue;
-    }
-
-    // JSON config-based install
-    if (agent.json) {
-      const cfg = agent.json(launcher, opts.global);
-      try {
-        const existing = await _readJson(fsp, cfg.path);
-        const merged = _deepMerge(existing, cfg.build());
-        await fsp.mkdir(path.dirname(cfg.path), { recursive: true });
-        await fsp.writeFile(cfg.path, JSON.stringify(merged, null, 2) + "\n");
-        const display = cfg.path.startsWith(process.cwd())
-          ? path.relative(process.cwd(), cfg.path)
-          : cfg.path.replace(_homedir() + "/", "~/");
-        console.log(`${g}✓${r} ${b}${agent.name}${r} ${d}(${display})${r}`);
-        installed++;
-      } catch {
-        console.log(`${d}✗ ${agent.name}${r}`);
-      }
+  for (const { agent, ok, detail } of results) {
+    if (ok === undefined) continue; // agent not found
+    if (ok) {
+      console.log(`${g}✓${r} ${b}${agent.name}${r} ${d}(${detail})${r}`);
+      installed++;
+    } else {
+      console.log(`${d}✗ ${agent.name}${r}`);
     }
   }
 
@@ -168,6 +146,57 @@ export async function installMCP(opts: { global: boolean }): Promise<void> {
 }
 
 // ---- internals ----
+
+type InstallResult = { agent: Agent; ok?: boolean; detail?: string };
+
+async function _installAgent(
+  agent: Agent,
+  launcher: McpLauncher,
+  global: boolean,
+  ctx: { fsp: typeof import("node:fs/promises"); path: typeof import("node:path") },
+): Promise<InstallResult> {
+  if (!(await which(agent.bin))) return { agent };
+
+  // CLI-based install
+  if (agent.install && !(await agent.installCheck?.())) {
+    const args = agent.install(launcher, global);
+    try {
+      await exec(args[0]!, args.slice(1));
+    } catch {
+      if (agent.remove) {
+        try {
+          const rm = agent.remove(global);
+          await exec(rm[0]!, rm.slice(1)).catch(() => {});
+          await exec(args[0]!, args.slice(1));
+        } catch {
+          if (!agent.json) return { agent, ok: false };
+        }
+      } else if (!agent.json) {
+        return { agent, ok: false };
+      }
+    }
+    if (!agent.json) return { agent, ok: true, detail: agent.bin };
+  }
+
+  // JSON config-based install
+  if (agent.json) {
+    const cfg = agent.json(launcher, global);
+    try {
+      const existing = await _readJson(ctx.fsp, cfg.path);
+      const merged = _deepMerge(existing, cfg.build());
+      await ctx.fsp.mkdir(ctx.path.dirname(cfg.path), { recursive: true });
+      await ctx.fsp.writeFile(cfg.path, JSON.stringify(merged, null, 2) + "\n");
+      const display = cfg.path.startsWith(process.cwd())
+        ? ctx.path.relative(process.cwd(), cfg.path)
+        : cfg.path.replace(_homedir() + "/", "~/");
+      return { agent, ok: true, detail: display };
+    } catch {
+      return { agent, ok: false };
+    }
+  }
+
+  return { agent };
+}
 
 function _homedir(): string {
   return getNodeBuiltin("node:os").homedir();
@@ -188,9 +217,15 @@ async function _resolveNpx(): Promise<string> {
 }
 
 export function resolveMcpLauncher(command: string): McpLauncher {
+  const args = command === "npx" ? ["-y", "voipi@latest", "mcp"] : ["voipi@latest", "mcp"];
+  return { command, args };
+}
+
+export function shellMcpLauncher(launcher: McpLauncher): McpLauncher {
+  const shell = _userShell();
   return {
-    command,
-    args: command === "npx" ? ["-y", "voipi@latest", "mcp"] : ["voipi@latest", "mcp"],
+    command: shell,
+    args: ["-lc", [launcher.command, ...launcher.args].join(" ")],
   };
 }
 
@@ -215,6 +250,10 @@ async function _hasPiPackage(pkg: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+function _userShell(): string {
+  return process.env.SHELL || "/bin/sh";
 }
 
 function _deepMerge(
