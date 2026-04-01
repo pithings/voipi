@@ -15,4 +15,11 @@ describe("resolveMcpLauncher", () => {
       args: ["-y", "voipi@latest", "mcp"],
     });
   });
+
+  it("does not pass -y to bunx", () => {
+    expect(resolveMcpLauncher("bunx")).toEqual({
+      command: "bunx",
+      args: ["voipi@latest", "mcp"],
+    });
+  });
 });

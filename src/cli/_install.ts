@@ -190,7 +190,7 @@ async function _resolveNpx(): Promise<string> {
 export function resolveMcpLauncher(command: string): McpLauncher {
   return {
     command,
-    args: command === "pnpx" ? ["voipi@latest", "mcp"] : ["-y", "voipi@latest", "mcp"],
+    args: command === "npx" ? ["-y", "voipi@latest", "mcp"] : ["voipi@latest", "mcp"],
   };
 }
 
