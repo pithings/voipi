@@ -1,6 +1,20 @@
 # Changelog
 
 
+## v0.0.11
+
+[compare changes](https://github.com/pithings/voipi/compare/v0.0.10...v0.0.11)
+
+### 🩹 Fixes
+
+- **pi:** Improve git extension loading and tool UX ([#3](https://github.com/pithings/voipi/pull/3))
+- Harden against ssml/powershell injection and malformed pong frames ([25c07c5](https://github.com/pithings/voipi/commit/25c07c5))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+- Mario Zechner <contact@badlogicgames.com>
+
 ## v0.0.10
 
 [compare changes](https://github.com/pithings/voipi/compare/v0.0.9...v0.0.10)
