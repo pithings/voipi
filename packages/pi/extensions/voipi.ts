@@ -55,7 +55,7 @@ export default function voipiExtension(pi: ExtensionAPI) {
       if (params.outputFile) {
         const outputFile = resolveOutputPath(params.outputFile, ctx.cwd);
         await mkdir(dirname(outputFile), { recursive: true });
-        await tts.save(text, outputFile, options);
+        await suppressPiperConsoleOutput(() => tts.save(text, outputFile, options));
 
         return {
           content: [
@@ -76,7 +76,7 @@ export default function voipiExtension(pi: ExtensionAPI) {
         };
       }
 
-      await tts.speak(text, options);
+      await suppressPiperConsoleOutput(() => tts.speak(text, options));
 
       return {
         content: [
@@ -165,7 +165,7 @@ export default function voipiExtension(pi: ExtensionAPI) {
       }
 
       const tts = await createProvider();
-      await tts.speak(text.trim());
+      await suppressPiperConsoleOutput(() => tts.speak(text.trim()));
 
       if (ctx.hasUI) {
         ctx.ui.notify(`Spoke text using ${tts.name}.`, "info");
@@ -287,6 +287,23 @@ function parseVoiceCommandArgs(args: string): { provider: string; query?: string
 
 function formatVoice(voice: Voice): string {
   return voice.lang ? `${voice.id} — ${voice.name} (${voice.lang})` : `${voice.id} — ${voice.name}`;
+}
+
+async function suppressPiperConsoleOutput<T>(fn: () => Promise<T>): Promise<T> {
+  const originalError = console.error;
+  console.error = (...args: unknown[]) => {
+    const [first] = args;
+    if (typeof first === "string" && first.startsWith("[piper]")) {
+      return;
+    }
+    originalError(...args);
+  };
+
+  try {
+    return await fn();
+  } finally {
+    console.error = originalError;
+  }
 }
 
 function resolveOutputPath(path: string, cwd: string): string {
