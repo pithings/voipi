@@ -4,7 +4,7 @@ import { dirname, resolve } from "node:path";
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { Text } from "@mariozechner/pi-tui";
 import { Type } from "typebox";
-import { VoiPi, providerMap, type SpeakOptions, type Voice } from "../../../src/index.ts";
+import { VoiPi, providerMap, type SpeakOptions, type Voice } from "voipi";
 
 const PROVIDERS = ["auto", "macos", "piper", "edge-tts", "google-tts"] as const;
 const MAX_VOICE_RESULTS = 100;
