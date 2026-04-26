@@ -9,6 +9,22 @@ const PROVIDERS = ["auto", "macos", "piper", "edge-tts", "google-tts"] as const;
 const MAX_VOICE_RESULTS = 100;
 const DEFAULT_VOICE_RESULTS = 25;
 
+type SpeakParams = {
+  text: string;
+  provider?: string;
+  voice?: string;
+  lang?: string;
+  rate?: number;
+  outputFile?: string;
+};
+
+type ListVoicesParams = {
+  provider?: string;
+  lang?: string;
+  query?: string;
+  limit?: number;
+};
+
 export default function voipiExtension(pi: ExtensionAPI) {
   pi.registerTool({
     name: "voipi_speak",
@@ -42,15 +58,16 @@ export default function voipiExtension(pi: ExtensionAPI) {
           description: "Optional path to save audio instead of playing it immediately.",
         }),
       ),
-    }),
-    async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+    }) as never,
+    async execute(_toolCallId, rawParams, signal, _onUpdate, ctx) {
+      const params = rawParams as SpeakParams;
       const text = params.text.trim();
       if (!text) {
         throw new Error("Text cannot be empty");
       }
 
       const tts = await createProvider(params.provider);
-      const options = toSpeakOptions(params);
+      const options = toSpeakOptions(params, signal);
 
       if (params.outputFile) {
         const outputFile = resolveOutputPath(params.outputFile, ctx.cwd);
@@ -125,8 +142,9 @@ export default function voipiExtension(pi: ExtensionAPI) {
           maximum: MAX_VOICE_RESULTS,
         }),
       ),
-    }),
-    async execute(_toolCallId, params) {
+    }) as never,
+    async execute(_toolCallId, rawParams) {
+      const params = rawParams as ListVoicesParams;
       const tts = await createProvider(params.provider);
       const allVoices = await tts.listVoices?.();
       const voices = filterVoices(allVoices, params.lang, params.query);
@@ -165,7 +183,7 @@ export default function voipiExtension(pi: ExtensionAPI) {
       }
 
       const tts = await createProvider();
-      await suppressPiperConsoleOutput(() => tts.speak(text.trim()));
+      await suppressPiperConsoleOutput(() => tts.speak(text.trim(), { signal: ctx.signal }));
 
       if (ctx.hasUI) {
         ctx.ui.notify(`Spoke text using ${tts.name}.`, "info");
@@ -232,11 +250,15 @@ async function createProvider(provider = "auto") {
   return factory();
 }
 
-function toSpeakOptions(params: { voice?: string; lang?: string; rate?: number }): SpeakOptions {
+function toSpeakOptions(
+  params: { voice?: string; lang?: string; rate?: number },
+  signal?: AbortSignal,
+): SpeakOptions {
   return {
     voice: params.voice,
     lang: params.lang,
     rate: params.rate,
+    signal,
   };
 }
 

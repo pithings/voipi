@@ -14,10 +14,14 @@ export function getNodeBuiltin<T extends keyof NodeBuiltinMap>(id: T): NodeBuilt
   return mod as NodeBuiltinMap[T];
 }
 
-export function exec(cmd: string, args: string[]): Promise<{ stdout: string; stderr: string }> {
+export function exec(
+  cmd: string,
+  args: string[],
+  options?: { signal?: AbortSignal },
+): Promise<{ stdout: string; stderr: string }> {
   const { execFile } = getNodeBuiltin("node:child_process");
   return new Promise((resolve, reject) => {
-    execFile(cmd, args, (error, stdout, stderr) => {
+    execFile(cmd, args, { signal: options?.signal }, (error, stdout, stderr) => {
       if (error) reject(error);
       else resolve({ stdout, stderr });
     });
@@ -34,12 +38,13 @@ function execPipe(
   cmd: string,
   args: string[],
   input?: Buffer,
-  options?: { captureStderr?: boolean },
+  options?: { captureStderr?: boolean; signal?: AbortSignal },
 ): Promise<void> {
   const { spawn } = getNodeBuiltin("node:child_process");
   return new Promise((resolve, reject) => {
     const child = spawn(cmd, args, {
       stdio: ["pipe", "ignore", options?.captureStderr ? "pipe" : "ignore"],
+      signal: options?.signal,
     });
     let stderr = "";
     let settled = false;
@@ -102,11 +107,13 @@ export async function resolveVoice(
 
 export async function playAudio(
   input: { path: string } | { data: Buffer; ext?: string },
+  signal?: AbortSignal,
 ): Promise<void> {
   // Linux ffplay supports stdin — pipe buffer directly
   if ("data" in input && process.platform === "linux") {
     return execPipe("ffplay", ["-nodisp", "-autoexit", "pipe:0"], input.data, {
       captureStderr: true,
+      signal,
     });
   }
 
@@ -142,9 +149,9 @@ export async function playAudio(
           ? ["-nodisp", "-autoexit", filePath]
           : [filePath];
     if (process.platform === "linux") {
-      await execPipe(player, args, undefined, { captureStderr: true });
+      await execPipe(player, args, undefined, { captureStderr: true, signal });
     } else {
-      await exec(player, args);
+      await exec(player, args, { signal });
     }
   } finally {
     if (tmpFile) {

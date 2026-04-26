@@ -65,6 +65,7 @@ export class EdgeTTS extends BaseVoiceProvider {
       this.defaultPitch,
       this.defaultVolume,
       this.outputFormat,
+      speakOpts?.signal,
     );
     return { data, ext: ".mp3" };
   }
@@ -138,7 +139,9 @@ async function edgeSynthesize(
   pitch: string,
   volume: string,
   outputFormat: string,
+  signal?: AbortSignal,
 ): Promise<Buffer> {
+  signal?.throwIfAborted();
   const chromeMajor = CHROMIUM_FULL_VERSION.split(".")[0];
   const wsUrl = await buildWsUrl();
   const socket = await WebSocket.connect(wsUrl, {
@@ -151,6 +154,15 @@ async function edgeSynthesize(
 
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
+    const onAbort = () => {
+      socket.close();
+      reject(signal?.reason ?? new Error("Aborted"));
+    };
+    signal?.addEventListener("abort", onAbort, { once: true });
+    const settle = (fn: () => void) => {
+      signal?.removeEventListener("abort", onAbort);
+      fn();
+    };
 
     socket.send(
       `Content-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n{"context":{"synthesis":{"audio":{"metadataoptions":{"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"true"},"outputFormat":"${outputFormat}"}}}}`,
@@ -173,13 +185,13 @@ async function edgeSynthesize(
         const msg = data.toString();
         if (msg.includes("Path:turn.end")) {
           socket.close();
-          resolve(Buffer.concat(chunks));
+          settle(() => resolve(Buffer.concat(chunks)));
         }
       }
     };
 
     socket.onerror = (err) => {
-      reject(_formatEdgeError(err));
+      settle(() => reject(_formatEdgeError(err)));
     };
   });
 }
