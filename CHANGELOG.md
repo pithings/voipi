@@ -1,6 +1,20 @@
 # Changelog
 
 
+## v0.0.12
+
+[compare changes](https://github.com/pithings/voipi/compare/v0.0.11...v0.0.12)
+
+### 🩹 Fixes
+
+- **pi:** Use import from pkg name ([dcdf51e](https://github.com/pithings/voipi/commit/dcdf51e))
+- **pi:** Use dynamic import with fallback to relative from src ([e787a6a](https://github.com/pithings/voipi/commit/e787a6a))
+- Default provider to `auto` ([f8bd7dc](https://github.com/pithings/voipi/commit/f8bd7dc))
+
+### ❤️ Contributors
+
+- Pooya Parsa ([@pi0](https://github.com/pi0))
+
 ## v0.0.11
 
 [compare changes](https://github.com/pithings/voipi/compare/v0.0.10...v0.0.11)
