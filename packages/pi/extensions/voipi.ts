@@ -2,12 +2,29 @@ import { mkdir } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import { Type } from "@sinclair/typebox";
-import { VoiPi, providerMap, type SpeakOptions, type Voice } from "voipi";
+import { Text } from "@mariozechner/pi-tui";
+import { Type } from "typebox";
+import { VoiPi, providerMap, type SpeakOptions, type Voice } from "../../../src/index.ts";
 
 const PROVIDERS = ["auto", "macos", "piper", "edge-tts", "google-tts"] as const;
 const MAX_VOICE_RESULTS = 100;
 const DEFAULT_VOICE_RESULTS = 25;
+
+type SpeakParams = {
+  text: string;
+  provider?: string;
+  voice?: string;
+  lang?: string;
+  rate?: number;
+  outputFile?: string;
+};
+
+type ListVoicesParams = {
+  provider?: string;
+  lang?: string;
+  query?: string;
+  limit?: number;
+};
 
 export default function voipiExtension(pi: ExtensionAPI) {
   pi.registerTool({
@@ -42,20 +59,24 @@ export default function voipiExtension(pi: ExtensionAPI) {
           description: "Optional path to save audio instead of playing it immediately.",
         }),
       ),
-    }),
-    async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
+    }) as never,
+    renderCall(args, theme) {
+      return new Text(renderSpeakCall(args as SpeakParams, theme), 0, 0);
+    },
+    async execute(_toolCallId, rawParams, signal, _onUpdate, ctx) {
+      const params = rawParams as SpeakParams;
       const text = params.text.trim();
       if (!text) {
         throw new Error("Text cannot be empty");
       }
 
       const tts = await createProvider(params.provider);
-      const options = toSpeakOptions(params);
+      const options = toSpeakOptions(params, signal);
 
       if (params.outputFile) {
         const outputFile = resolveOutputPath(params.outputFile, ctx.cwd);
         await mkdir(dirname(outputFile), { recursive: true });
-        await tts.save(text, outputFile, options);
+        await suppressPiperConsoleOutput(() => tts.save(text, outputFile, options));
 
         return {
           content: [
@@ -76,7 +97,7 @@ export default function voipiExtension(pi: ExtensionAPI) {
         };
       }
 
-      await tts.speak(text, options);
+      await suppressPiperConsoleOutput(() => tts.speak(text, options));
 
       return {
         content: [
@@ -125,8 +146,12 @@ export default function voipiExtension(pi: ExtensionAPI) {
           maximum: MAX_VOICE_RESULTS,
         }),
       ),
-    }),
-    async execute(_toolCallId, params) {
+    }) as never,
+    renderCall(args, theme) {
+      return new Text(renderListVoicesCall(args as ListVoicesParams, theme), 0, 0);
+    },
+    async execute(_toolCallId, rawParams) {
+      const params = rawParams as ListVoicesParams;
       const tts = await createProvider(params.provider);
       const allVoices = await tts.listVoices?.();
       const voices = filterVoices(allVoices, params.lang, params.query);
@@ -165,7 +190,7 @@ export default function voipiExtension(pi: ExtensionAPI) {
       }
 
       const tts = await createProvider();
-      await tts.speak(text.trim());
+      await suppressPiperConsoleOutput(() => tts.speak(text.trim(), { signal: ctx.signal }));
 
       if (ctx.hasUI) {
         ctx.ui.notify(`Spoke text using ${tts.name}.`, "info");
@@ -232,11 +257,46 @@ async function createProvider(provider = "auto") {
   return factory();
 }
 
-function toSpeakOptions(params: { voice?: string; lang?: string; rate?: number }): SpeakOptions {
+function renderSpeakCall(params: SpeakParams, theme: RenderTheme): string {
+  const parts = [theme.fg("toolTitle", theme.bold("voipi_speak"))];
+  const text = truncateSingleLine(params.text, 120);
+  parts.push(theme.fg("dim", `"${text}"`));
+  if (params.provider) parts.push(theme.fg("muted", `provider=${params.provider}`));
+  if (params.voice) parts.push(theme.fg("muted", `voice=${params.voice}`));
+  if (params.lang) parts.push(theme.fg("muted", `lang=${params.lang}`));
+  if (params.rate !== undefined) parts.push(theme.fg("muted", `rate=${params.rate}`));
+  if (params.outputFile) parts.push(theme.fg("muted", `output=${params.outputFile}`));
+  return parts.join(" ");
+}
+
+function renderListVoicesCall(params: ListVoicesParams, theme: RenderTheme): string {
+  const parts = [theme.fg("toolTitle", theme.bold("voipi_list_voices"))];
+  if (params.provider) parts.push(theme.fg("muted", `provider=${params.provider}`));
+  if (params.lang) parts.push(theme.fg("muted", `lang=${params.lang}`));
+  if (params.query) parts.push(theme.fg("dim", `query="${truncateSingleLine(params.query, 80)}"`));
+  if (params.limit !== undefined) parts.push(theme.fg("muted", `limit=${params.limit}`));
+  return parts.join(" ");
+}
+
+function truncateSingleLine(text: string, maxLength: number): string {
+  const singleLine = text.replace(/\s+/g, " ").trim();
+  return singleLine.length <= maxLength ? singleLine : `${singleLine.slice(0, maxLength - 1)}…`;
+}
+
+type RenderTheme = {
+  bold(text: string): string;
+  fg(color: string, text: string): string;
+};
+
+function toSpeakOptions(
+  params: { voice?: string; lang?: string; rate?: number },
+  signal?: AbortSignal,
+): SpeakOptions {
   return {
     voice: params.voice,
     lang: params.lang,
     rate: params.rate,
+    signal,
   };
 }
 
@@ -287,6 +347,23 @@ function parseVoiceCommandArgs(args: string): { provider: string; query?: string
 
 function formatVoice(voice: Voice): string {
   return voice.lang ? `${voice.id} — ${voice.name} (${voice.lang})` : `${voice.id} — ${voice.name}`;
+}
+
+async function suppressPiperConsoleOutput<T>(fn: () => Promise<T>): Promise<T> {
+  const originalError = console.error;
+  console.error = (...args: unknown[]) => {
+    const [first] = args;
+    if (typeof first === "string" && first.startsWith("[piper]")) {
+      return;
+    }
+    originalError(...args);
+  };
+
+  try {
+    return await fn();
+  } finally {
+    console.error = originalError;
+  }
 }
 
 function resolveOutputPath(path: string, cwd: string): string {

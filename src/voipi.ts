@@ -113,7 +113,9 @@ export class VoiPi extends BaseVoiceProvider {
     const provider = await this.resolveProvider();
     try {
       return await fn(provider);
-    } catch {
+    } catch (error) {
+      if (_isAbortError(error)) throw error;
+
       // Current provider failed at runtime — try remaining factories
       const remaining = this._factories.slice(this._factoryIndex + 1);
       if (remaining.length === 0) throw new Error(`All providers failed`);
@@ -125,6 +127,12 @@ export class VoiPi extends BaseVoiceProvider {
 }
 
 // --- internals ---
+
+function _isAbortError(error: unknown): boolean {
+  if (error instanceof DOMException && error.name === "AbortError") return true;
+  if (error instanceof Error && error.name === "AbortError") return true;
+  return false;
+}
 
 function _toFactory(def: ProviderDef): ProviderFactory {
   if (typeof def === "function") return def;

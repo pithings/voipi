@@ -35,13 +35,13 @@ export class EspeakNG extends BaseVoiceProvider {
 
   override async synthesize(text: string, options?: SpeakOptions): Promise<AudioData> {
     const args = this._buildArgs(text, options, ["--stdout"]);
-    const { stdout } = await _execBinary("espeak-ng", args);
+    const { stdout } = await _execBinary("espeak-ng", args, options?.signal);
     return { data: stdout, ext: ".wav" };
   }
 
   override async speak(text: string, options?: SpeakOptions): Promise<void> {
     const args = this._buildArgs(text, options);
-    await exec("espeak-ng", args);
+    await exec("espeak-ng", args, { signal: options?.signal });
   }
 
   override async listVoices(): Promise<Voice[]> {
@@ -75,13 +75,17 @@ export class EspeakNG extends BaseVoiceProvider {
 
 // ---- internals ----
 
-function _execBinary(cmd: string, args: string[]): Promise<{ stdout: Buffer; stderr: string }> {
+function _execBinary(
+  cmd: string,
+  args: string[],
+  signal?: AbortSignal,
+): Promise<{ stdout: Buffer; stderr: string }> {
   const { execFile } = getNodeBuiltin("node:child_process");
   return new Promise((resolve, reject) => {
     execFile(
       cmd,
       args,
-      { encoding: "buffer", maxBuffer: 10 * 1024 * 1024 },
+      { encoding: "buffer", maxBuffer: 10 * 1024 * 1024, signal },
       (error, stdout, stderr) => {
         if (error) reject(error);
         else resolve({ stdout: Buffer.from(stdout), stderr: String(stderr) });

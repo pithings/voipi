@@ -48,6 +48,7 @@ Providers are exported from both the main entry (`voipi`) and as subpath exports
 - **Audio playback** — `playAudio()` handles `{data, ext}` or `{path}`. Linux uses `ffplay`; backend permission/connection failures are surfaced so MCP callers do not get false-positive playback success. macOS: `afplay`. Windows: PowerShell `SoundPlayer`. Temp files cleaned up in `finally`.
 - **Audio duration** — `AudioData.duration` auto-populated by `toAudio()`. WAV/AIFF: exact from headers. MP3: estimated from first frame bitrate (fallback 48kbps). Pre-synthesis estimate via `estimateSpeechDuration()` (~150 WPM heuristic).
 - **WebSocket** (`_ws.ts`) — Custom minimal WS implementation over `node:tls`. Supports text send, binary receive, ping/pong. Used instead of `ws` package to enable custom headers without dependencies.
+- **Abort signals** — `SpeakOptions.signal` propagates through `synthesize`/`speak`/`save`, all `child_process` spawns (passed via `signal` option), all `fetch()` calls, and the Edge TTS WebSocket. `VoiPi._callWithFallback` short-circuits on `AbortError` so cancellation is not masked as `All providers failed`.
 
 ## Best Practices
 

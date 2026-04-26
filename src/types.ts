@@ -11,6 +11,9 @@ export interface SpeakOptions {
 
   /** Output file path. If set, audio is written to file instead of played */
   outputFile?: string;
+
+  /** Abort signal for cancelling synthesis, playback, downloads, and subprocesses */
+  signal?: AbortSignal;
 }
 
 /** A voice available from the provider */

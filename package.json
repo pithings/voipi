@@ -41,6 +41,7 @@
     "typecheck": "tsgo --noEmit --skipLibCheck"
   },
   "devDependencies": {
+    "@mariozechner/pi-tui": "*",
     "@types/node": "latest",
     "@typescript/native-preview": "latest",
     "@vitest/coverage-v8": "latest",
@@ -50,6 +51,7 @@
     "oxfmt": "latest",
     "oxlint": "latest",
     "std-env": "^4.0.0",
+    "typebox": "^1.1.33",
     "typescript": "latest",
     "vitest": "latest",
     "voipi": "latest"

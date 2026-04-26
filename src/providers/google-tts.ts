@@ -42,7 +42,7 @@ export class GoogleTTS extends BaseVoiceProvider {
       this.defaultLang;
     const slow = speakOpts?.rate != null ? speakOpts.rate < 0.75 : this.slow;
 
-    const data = await synthesize(text, lang, slow);
+    const data = await synthesize(text, lang, slow, speakOpts?.signal);
     return { data, ext: ".mp3" };
   }
 
@@ -90,8 +90,9 @@ function chunkText(text: string): string[] {
   return chunks;
 }
 
-async function fetchChunk(url: string): Promise<ArrayBuffer> {
+async function fetchChunk(url: string, signal?: AbortSignal): Promise<ArrayBuffer> {
   const res = await fetch(url, {
+    signal,
     headers: {
       "User-Agent":
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
@@ -105,12 +106,18 @@ async function fetchChunk(url: string): Promise<ArrayBuffer> {
   return res.arrayBuffer();
 }
 
-async function synthesize(text: string, lang: string, slow: boolean): Promise<Buffer> {
+async function synthesize(
+  text: string,
+  lang: string,
+  slow: boolean,
+  signal?: AbortSignal,
+): Promise<Buffer> {
   const chunks = chunkText(text);
   const buffers: ArrayBuffer[] = [];
   for (let i = 0; i < chunks.length; i++) {
     const url = buildUrl(chunks[i]!, lang, slow, i, chunks.length);
-    buffers.push(await fetchChunk(url));
+    signal?.throwIfAborted();
+    buffers.push(await fetchChunk(url, signal));
   }
   return Buffer.concat(buffers.map((b) => new Uint8Array(b)));
 }

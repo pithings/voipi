@@ -149,6 +149,16 @@ const audio = await voice.toAudio("Hello world!"); // duration auto-populated
 console.log(audio.duration); // seconds
 ```
 
+### Cancellation
+
+Pass an `AbortSignal` to cancel synthesis, playback, downloads, and subprocesses:
+
+```ts
+const ctrl = new AbortController();
+setTimeout(() => ctrl.abort(), 500);
+await voice.speak("This will be cut off…", { signal: ctrl.signal });
+```
+
 ## Providers
 
 ### macOS

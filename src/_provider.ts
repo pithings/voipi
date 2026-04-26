@@ -32,7 +32,7 @@ export abstract class BaseVoiceProvider {
 
   async speak(text: string, options?: SpeakOptions): Promise<void> {
     const audio = await this.synthesize(text, options);
-    await playAudio(audio);
+    await playAudio(audio, options?.signal);
   }
 
   async save(text: string, outputFile: string, options?: SpeakOptions): Promise<void> {

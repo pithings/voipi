@@ -107,7 +107,7 @@ export class MacOS extends BaseVoiceProvider {
 
     args.push("--", text);
 
-    await exec("say", args);
+    await exec("say", args, { signal: options?.signal });
   }
 
   override async listVoices(): Promise<Voice[]> {

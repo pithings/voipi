@@ -45,14 +45,15 @@ export class Piper extends BaseVoiceProvider {
       this.defaultVoiceForLanguage(speakOpts?.lang ?? detectLanguage(text)) ??
       this.defaultVoice;
 
-    const piper = await ensurePiper();
-    const modelPath = await ensureVoice(voiceId);
+    const piper = await ensurePiper(speakOpts?.signal);
+    const modelPath = await ensureVoice(voiceId, speakOpts?.signal);
 
     const lengthScale = speakOpts?.rate != null ? 1 / speakOpts.rate : this.lengthScale;
 
     const data = await runPiper(piper, modelPath, text, {
       lengthScale,
       speaker: this.speaker,
+      signal: speakOpts?.signal,
     });
 
     return { data, ext: ".wav" };
@@ -122,18 +123,22 @@ async function fileExists(path: string): Promise<boolean> {
     .catch(() => false);
 }
 
-async function download(url: string, dest: string): Promise<void> {
+async function download(url: string, dest: string, signal?: AbortSignal): Promise<void> {
   const fsp = getNodeBuiltin("node:fs/promises");
-  const res = await fetch(url, { redirect: "follow" });
+  const res = await fetch(url, { redirect: "follow", signal });
   if (!res.ok) throw new Error(`Download failed: ${res.status} ${url}`);
   const buf = Buffer.from(await res.arrayBuffer());
   await fsp.writeFile(dest, buf);
 }
 
-function execSimple(cmd: string, args: string[]): Promise<{ stdout: string; stderr: string }> {
+function execSimple(
+  cmd: string,
+  args: string[],
+  signal?: AbortSignal,
+): Promise<{ stdout: string; stderr: string }> {
   const { execFile } = getNodeBuiltin("node:child_process");
   return new Promise((resolve, reject) => {
-    execFile(cmd, args, (error, stdout, stderr) => {
+    execFile(cmd, args, { signal }, (error, stdout, stderr) => {
       if (error) reject(error);
       else resolve({ stdout, stderr });
     });
@@ -159,13 +164,17 @@ async function findSystemPiper(): Promise<PiperCmd | undefined> {
 
 let _piperPromise: Promise<PiperCmd> | undefined;
 
-async function ensurePiper(): Promise<PiperCmd> {
+async function ensurePiper(signal?: AbortSignal): Promise<PiperCmd> {
+  signal?.throwIfAborted();
   if (_piperPromise) return _piperPromise;
-  _piperPromise = _ensurePiper();
+  _piperPromise = _ensurePiper(signal).catch((error) => {
+    _piperPromise = undefined;
+    throw error;
+  });
   return _piperPromise;
 }
 
-async function _ensurePiper(): Promise<PiperCmd> {
+async function _ensurePiper(signal?: AbortSignal): Promise<PiperCmd> {
   // 1. Check system PATH
   const system = await findSystemPiper();
   if (system) return system;
@@ -176,9 +185,9 @@ async function _ensurePiper(): Promise<PiperCmd> {
 
   // 3. Install: standalone binary on Linux, pip venv elsewhere
   if (process.platform === "linux") {
-    return installBinary();
+    return installBinary(signal);
   }
-  return installPipVenv();
+  return installPipVenv(signal);
 }
 
 async function findCachedPiper(): Promise<PiperCmd | undefined> {
@@ -205,7 +214,7 @@ async function findCachedPiper(): Promise<PiperCmd | undefined> {
   return undefined;
 }
 
-async function installBinary(): Promise<PiperCmd> {
+async function installBinary(signal?: AbortSignal): Promise<PiperCmd> {
   const { join, dirname } = getNodeBuiltin("node:path");
   const cacheDir = getCacheDir();
   const binDir = join(cacheDir, "bin");
@@ -219,11 +228,13 @@ async function installBinary(): Promise<PiperCmd> {
   const archivePath = join(binDir, `${file}.tar.gz`);
 
   console.error(`[piper] Downloading piper binary...`);
-  await download(url, archivePath);
+  await download(url, archivePath, signal);
 
   const { execFile } = getNodeBuiltin("node:child_process");
   await new Promise<void>((resolve, reject) => {
-    execFile("tar", ["xzf", archivePath, "-C", binDir], (err) => (err ? reject(err) : resolve()));
+    execFile("tar", ["xzf", archivePath, "-C", binDir], { signal }, (err) =>
+      err ? reject(err) : resolve(),
+    );
   });
 
   const fsp = getNodeBuiltin("node:fs/promises");
@@ -238,31 +249,31 @@ async function installBinary(): Promise<PiperCmd> {
   };
 }
 
-async function installPipVenv(): Promise<PiperCmd> {
+async function installPipVenv(signal?: AbortSignal): Promise<PiperCmd> {
   const { join } = getNodeBuiltin("node:path");
   const venvDir = join(getCacheDir(), "venv");
 
   // Find python3
   let python = "python3";
   try {
-    await execSimple("python3", ["--version"]);
+    await execSimple("python3", ["--version"], signal);
   } catch {
     python = "python";
   }
 
   console.error(`[piper] Creating venv and installing piper-tts...`);
   await ensureDir(venvDir);
-  await execSimple(python, ["-m", "venv", venvDir]);
+  await execSimple(python, ["-m", "venv", venvDir], signal);
 
   const pip = join(venvDir, "bin", "pip");
-  await execSimple(pip, ["install", `piper-tts==${PIPER_PIP_VERSION}`, "pathvalidate"]);
+  await execSimple(pip, ["install", `piper-tts==${PIPER_PIP_VERSION}`, "pathvalidate"], signal);
 
   const piperBin = join(venvDir, "bin", "piper");
   console.error(`[piper] Installed to ${piperBin}`);
   return { cmd: piperBin, args: [] };
 }
 
-async function ensureVoice(voiceId: string): Promise<string> {
+async function ensureVoice(voiceId: string, signal?: AbortSignal): Promise<string> {
   const { join } = getNodeBuiltin("node:path");
   const voicesDir = join(getCacheDir(), "voices");
   const modelPath = join(voicesDir, `${voiceId}.onnx`);
@@ -282,8 +293,8 @@ async function ensureVoice(voiceId: string): Promise<string> {
 
   console.error(`[piper] Downloading voice "${voiceId}"...`);
   await Promise.all([
-    download(`${HF_BASE}/${basePath}.onnx?download=true`, modelPath),
-    download(`${HF_BASE}/${basePath}.onnx.json?download=true`, configPath),
+    download(`${HF_BASE}/${basePath}.onnx?download=true`, modelPath, signal),
+    download(`${HF_BASE}/${basePath}.onnx.json?download=true`, configPath, signal),
   ]);
 
   console.error(`[piper] Voice "${voiceId}" ready`);
@@ -304,7 +315,7 @@ function runPiper(
   piper: PiperCmd,
   modelPath: string,
   text: string,
-  opts: { lengthScale: number; speaker: number },
+  opts: { lengthScale: number; speaker: number; signal?: AbortSignal },
 ): Promise<Buffer> {
   const { spawn } = getNodeBuiltin("node:child_process");
 
@@ -326,6 +337,7 @@ function runPiper(
     const child = spawn(piper.cmd, args, {
       stdio: ["pipe", "pipe", "pipe"],
       env,
+      signal: opts.signal,
     });
 
     const chunks: Buffer[] = [];
