@@ -40,6 +40,9 @@
     "test": "pnpm lint && pnpm typecheck && vitest run --coverage",
     "typecheck": "tsgo --noEmit --skipLibCheck"
   },
+  "dependencies": {
+    "@sinclair/typebox": "*"
+  },
   "devDependencies": {
     "@types/node": "latest",
     "@typescript/native-preview": "latest",
