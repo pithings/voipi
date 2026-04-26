@@ -144,7 +144,7 @@ export async function playAudio(
           : "ffplay";
     const args =
       process.platform === "win32"
-        ? ["-c", `(New-Object Media.SoundPlayer '${filePath}').PlaySync()`]
+        ? ["-c", `(New-Object Media.SoundPlayer '${filePath.replace(/'/g, "''")}').PlaySync()`]
         : process.platform === "linux"
           ? ["-nodisp", "-autoexit", filePath]
           : [filePath];

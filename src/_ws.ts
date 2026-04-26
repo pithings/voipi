@@ -147,7 +147,22 @@ export class WebSocket {
           const mask = crypto.getRandomValues(new Uint8Array(4));
           const masked = Buffer.from(payload);
           for (let i = 0; i < masked.length; i++) masked[i]! ^= mask[i & 3]!;
-          const hdr = Buffer.from([0x80 | WS_OPCODES.PONG, 0x80 | payload.length, ...mask]);
+          let hdr: Buffer;
+          if (payload.length < 126) {
+            hdr = Buffer.from([0x80 | WS_OPCODES.PONG, 0x80 | payload.length, ...mask]);
+          } else if (payload.length < 65536) {
+            hdr = Buffer.alloc(8);
+            hdr[0] = 0x80 | WS_OPCODES.PONG;
+            hdr[1] = 0x80 | 126;
+            hdr.writeUInt16BE(payload.length, 2);
+            hdr.set(mask, 4);
+          } else {
+            hdr = Buffer.alloc(14);
+            hdr[0] = 0x80 | WS_OPCODES.PONG;
+            hdr[1] = 0x80 | 127;
+            hdr.writeBigUInt64BE(BigInt(payload.length), 2);
+            hdr.set(mask, 10);
+          }
           this.socket.write(Buffer.concat([hdr, masked]));
         } else if (opcode === WS_OPCODES.TEXT || opcode === WS_OPCODES.BINARY) {
           this.onmessage?.({ data: Buffer.from(payload), isBinary: opcode === WS_OPCODES.BINARY });

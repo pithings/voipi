@@ -249,8 +249,8 @@ export function buildSsml(
   volume: string,
 ): string {
   return `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="en-US">
-  <voice name="${voice}">
-    <prosody rate="${rate}" pitch="${pitch}" volume="${volume}">
+  <voice name="${escapeXml(voice)}">
+    <prosody rate="${escapeXml(rate)}" pitch="${escapeXml(pitch)}" volume="${escapeXml(volume)}">
       ${escapeXml(text)}
     </prosody>
   </voice>
