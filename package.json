@@ -40,9 +40,6 @@
     "test": "pnpm lint && pnpm typecheck && vitest run --coverage",
     "typecheck": "tsgo --noEmit --skipLibCheck"
   },
-  "dependencies": {
-    "typebox": "^1.1.33"
-  },
   "devDependencies": {
     "@mariozechner/pi-tui": "*",
     "@types/node": "latest",
@@ -54,6 +51,7 @@
     "oxfmt": "latest",
     "oxlint": "latest",
     "std-env": "^4.0.0",
+    "typebox": "^1.1.33",
     "typescript": "latest",
     "vitest": "latest",
     "voipi": "latest"
