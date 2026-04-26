@@ -4,7 +4,20 @@ import { dirname, resolve } from "node:path";
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { Text } from "@mariozechner/pi-tui";
 import { Type } from "typebox";
-import { VoiPi, providerMap, type SpeakOptions, type Voice } from "voipi";
+import type { SpeakOptions, Voice } from "voipi";
+
+type VoipiModule = typeof import("voipi");
+
+let voipiModulePromise: Promise<VoipiModule> | undefined;
+
+function loadVoipi(): Promise<VoipiModule> {
+  if (!voipiModulePromise) {
+    voipiModulePromise = import("voipi").catch(
+      () => import("../../../src/index.ts") as unknown as Promise<VoipiModule>,
+    );
+  }
+  return voipiModulePromise;
+}
 
 const PROVIDERS = ["auto", "macos", "piper", "edge-tts", "google-tts"] as const;
 const MAX_VOICE_RESULTS = 100;
@@ -245,6 +258,8 @@ export default function voipiExtension(pi: ExtensionAPI) {
 }
 
 async function createProvider(provider = "auto") {
+  const { VoiPi, providerMap } = await loadVoipi();
+
   if (provider === "auto") {
     return new VoiPi();
   }
