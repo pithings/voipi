@@ -56,7 +56,8 @@ export class VoiPi extends BaseVoiceProvider {
 
   constructor(options?: VoiPiOptions) {
     super();
-    this._factories = options?.providers?.map((p) => _toFactory(p)) ?? _defaultProviders;
+    const defs = options?.providers?.filter((p) => p && p !== "auto");
+    this._factories = defs && defs.length > 0 ? defs.map((p) => _toFactory(p)) : _defaultProviders;
   }
 
   /** Resolve the first available provider from the chain. */

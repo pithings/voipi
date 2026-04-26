@@ -257,10 +257,10 @@ export default function voipiExtension(pi: ExtensionAPI) {
   });
 }
 
-async function createProvider(provider = "auto") {
+async function createProvider(provider?: string) {
   const { VoiPi, providerMap } = await loadVoipi();
 
-  if (provider === "auto") {
+  if (!provider || provider === "auto") {
     return new VoiPi();
   }
 

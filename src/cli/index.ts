@@ -104,7 +104,7 @@ const { values, positionals } = parseArgs({
 const command = positionals[0];
 
 async function main(): Promise<void> {
-  const providerName = values.provider ?? "auto";
+  const providerName = values.provider || "auto";
   const voipi = createVoiPi(providerName);
 
   if (values.help) {
@@ -197,7 +197,7 @@ main().catch((error) => {
 // ---- internals ----
 
 function createVoiPi(name: string): VoiPi {
-  if (name === "auto") return new VoiPi();
+  if (!name || name === "auto") return new VoiPi();
   const factory = providerMap[name];
   if (!factory) {
     console.error(`Unknown provider: ${name}\nAvailable: ${providerNames.join(", ")}`);
