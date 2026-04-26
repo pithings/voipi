@@ -2,6 +2,7 @@ import { mkdir } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
+import { Text } from "@mariozechner/pi-tui";
 import { Type } from "typebox";
 import { VoiPi, providerMap, type SpeakOptions, type Voice } from "../../../src/index.ts";
 
@@ -59,6 +60,9 @@ export default function voipiExtension(pi: ExtensionAPI) {
         }),
       ),
     }) as never,
+    renderCall(args, theme) {
+      return new Text(renderSpeakCall(args as SpeakParams, theme), 0, 0);
+    },
     async execute(_toolCallId, rawParams, signal, _onUpdate, ctx) {
       const params = rawParams as SpeakParams;
       const text = params.text.trim();
@@ -143,6 +147,9 @@ export default function voipiExtension(pi: ExtensionAPI) {
         }),
       ),
     }) as never,
+    renderCall(args, theme) {
+      return new Text(renderListVoicesCall(args as ListVoicesParams, theme), 0, 0);
+    },
     async execute(_toolCallId, rawParams) {
       const params = rawParams as ListVoicesParams;
       const tts = await createProvider(params.provider);
@@ -249,6 +256,37 @@ async function createProvider(provider = "auto") {
 
   return factory();
 }
+
+function renderSpeakCall(params: SpeakParams, theme: RenderTheme): string {
+  const parts = [theme.fg("toolTitle", theme.bold("voipi_speak"))];
+  const text = truncateSingleLine(params.text, 120);
+  parts.push(theme.fg("dim", `"${text}"`));
+  if (params.provider) parts.push(theme.fg("muted", `provider=${params.provider}`));
+  if (params.voice) parts.push(theme.fg("muted", `voice=${params.voice}`));
+  if (params.lang) parts.push(theme.fg("muted", `lang=${params.lang}`));
+  if (params.rate !== undefined) parts.push(theme.fg("muted", `rate=${params.rate}`));
+  if (params.outputFile) parts.push(theme.fg("muted", `output=${params.outputFile}`));
+  return parts.join(" ");
+}
+
+function renderListVoicesCall(params: ListVoicesParams, theme: RenderTheme): string {
+  const parts = [theme.fg("toolTitle", theme.bold("voipi_list_voices"))];
+  if (params.provider) parts.push(theme.fg("muted", `provider=${params.provider}`));
+  if (params.lang) parts.push(theme.fg("muted", `lang=${params.lang}`));
+  if (params.query) parts.push(theme.fg("dim", `query="${truncateSingleLine(params.query, 80)}"`));
+  if (params.limit !== undefined) parts.push(theme.fg("muted", `limit=${params.limit}`));
+  return parts.join(" ");
+}
+
+function truncateSingleLine(text: string, maxLength: number): string {
+  const singleLine = text.replace(/\s+/g, " ").trim();
+  return singleLine.length <= maxLength ? singleLine : `${singleLine.slice(0, maxLength - 1)}…`;
+}
+
+type RenderTheme = {
+  bold(text: string): string;
+  fg(color: string, text: string): string;
+};
 
 function toSpeakOptions(
   params: { voice?: string; lang?: string; rate?: number },

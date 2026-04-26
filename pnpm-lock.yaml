@@ -15,6 +15,9 @@ importers:
         specifier: ^1.1.33
         version: 1.1.33
     devDependencies:
+      '@mariozechner/pi-tui':
+        specifier: '*'
+        version: 0.64.0
       '@types/node':
         specifier: latest
         version: 25.5.0
@@ -64,6 +67,9 @@ importers:
       '@mariozechner/pi-coding-agent':
         specifier: '*'
         version: 0.64.0(ws@8.20.0)(zod@4.3.6)
+      '@mariozechner/pi-tui':
+        specifier: '*'
+        version: 0.64.0
 
   website:
     devDependencies:

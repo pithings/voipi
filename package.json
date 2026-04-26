@@ -44,6 +44,7 @@
     "typebox": "^1.1.33"
   },
   "devDependencies": {
+    "@mariozechner/pi-tui": "*",
     "@types/node": "latest",
     "@typescript/native-preview": "latest",
     "@vitest/coverage-v8": "latest",

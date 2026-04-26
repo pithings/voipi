@@ -26,10 +26,12 @@
     "voipi": "latest"
   },
   "devDependencies": {
-    "@mariozechner/pi-coding-agent": "*"
+    "@mariozechner/pi-coding-agent": "*",
+    "@mariozechner/pi-tui": "*"
   },
   "peerDependencies": {
     "@mariozechner/pi-coding-agent": "*",
+    "@mariozechner/pi-tui": "*",
     "typebox": "^1.1.33"
   },
   "pi": {
