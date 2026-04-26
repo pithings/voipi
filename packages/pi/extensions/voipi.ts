@@ -2,7 +2,7 @@ import { mkdir } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import { Type } from "@sinclair/typebox";
+import { Type } from "typebox";
 import { VoiPi, providerMap, type SpeakOptions, type Voice } from "../../../src/index.ts";
 
 const PROVIDERS = ["auto", "macos", "piper", "edge-tts", "google-tts"] as const;

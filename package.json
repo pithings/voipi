@@ -41,7 +41,7 @@
     "typecheck": "tsgo --noEmit --skipLibCheck"
   },
   "dependencies": {
-    "@sinclair/typebox": "*"
+    "typebox": "^1.1.33"
   },
   "devDependencies": {
     "@types/node": "latest",

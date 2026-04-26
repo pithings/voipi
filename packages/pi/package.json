@@ -22,7 +22,7 @@
   ],
   "type": "module",
   "dependencies": {
-    "@sinclair/typebox": "*",
+    "typebox": "^1.1.33",
     "voipi": "latest"
   },
   "devDependencies": {
@@ -30,7 +30,7 @@
   },
   "peerDependencies": {
     "@mariozechner/pi-coding-agent": "*",
-    "@sinclair/typebox": "*"
+    "typebox": "^1.1.33"
   },
   "pi": {
     "extensions": [
