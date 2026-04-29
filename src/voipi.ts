@@ -2,6 +2,7 @@ import type { SpeakOptions, Voice } from "./types.ts";
 import { BaseVoiceProvider } from "./_provider.ts";
 import type { AudioData } from "./_provider.ts";
 import { resolveVoice } from "./_utils.ts";
+import { loadConfig, type VoipiConfig } from "./_config.ts";
 
 export type ProviderFactory = () => BaseVoiceProvider | Promise<BaseVoiceProvider>;
 
@@ -53,11 +54,27 @@ export class VoiPi extends BaseVoiceProvider {
   private _resolving: Promise<[BaseVoiceProvider, number]> | undefined;
   private _factories: ProviderFactory[];
   private _factoryIndex = 0;
+  private _config: VoipiConfig;
 
   constructor(options?: VoiPiOptions) {
     super();
+    const { config } = loadConfig();
+    this._config = config;
+
     const defs = options?.providers?.filter((p) => p && p !== "auto");
-    this._factories = defs && defs.length > 0 ? defs.map((p) => _toFactory(p)) : _defaultProviders;
+    if (defs && defs.length > 0) {
+      this._factories = defs.map((p) => _toFactory(p));
+    } else if (config.provider && config.provider !== "auto") {
+      const factory = providerMap[config.provider];
+      if (!factory) {
+        throw new Error(
+          `Unknown provider in config: "${config.provider}". Available: ${Object.keys(providerMap).join(", ")}`,
+        );
+      }
+      this._factories = [factory];
+    } else {
+      this._factories = _defaultProviders;
+    }
   }
 
   /** Resolve the first available provider from the chain. */
@@ -76,28 +93,30 @@ export class VoiPi extends BaseVoiceProvider {
   }
 
   async synthesize(text: string, options?: SpeakOptions): Promise<AudioData> {
-    return this._callWithFallback((provider) => provider.synthesize(text, options));
+    return this._callWithFallback((provider) => provider.synthesize(text, this._mergeOptions(options)));
   }
 
   override async speak(text: string, options?: SpeakOptions): Promise<void> {
+    const merged = this._mergeOptions(options);
     return this._callWithFallback(async (provider) => {
       const voice = await resolveVoice(
-        options?.voice,
+        merged?.voice,
         provider.listVoices?.bind(provider),
         provider.hasVoice?.bind(provider),
       );
-      return provider.speak(text, voice ? { ...options, voice } : options);
+      return provider.speak(text, voice ? { ...merged, voice } : merged);
     });
   }
 
   override async save(text: string, outputFile: string, options?: SpeakOptions): Promise<void> {
+    const merged = this._mergeOptions(options);
     return this._callWithFallback(async (provider) => {
       const voice = await resolveVoice(
-        options?.voice,
+        merged?.voice,
         provider.listVoices?.bind(provider),
         provider.hasVoice?.bind(provider),
       );
-      return provider.save(text, outputFile, voice ? { ...options, voice } : options);
+      return provider.save(text, outputFile, voice ? { ...merged, voice } : merged);
     });
   }
 
@@ -107,6 +126,19 @@ export class VoiPi extends BaseVoiceProvider {
       throw new Error(`Provider "${provider.name}" does not support listing voices`);
     }
     return provider.listVoices();
+  }
+
+  /** Merge config defaults into speak options. */
+  private _mergeOptions(options?: SpeakOptions): SpeakOptions | undefined {
+    if (!this._config.voice && !this._config.lang && this._config.rate === undefined) {
+      return options;
+    }
+    return {
+      ...(this._config.lang !== undefined && { lang: this._config.lang }),
+      ...(this._config.voice !== undefined && { voice: this._config.voice }),
+      ...(this._config.rate !== undefined && { rate: this._config.rate }),
+      ...options,
+    };
   }
 
   /** Try current provider, fallback to remaining on failure. */

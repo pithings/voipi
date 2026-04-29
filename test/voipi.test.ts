@@ -1,6 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { VoiPi } from "../src/voipi.ts";
 import { BaseVoiceProvider, type AudioData } from "../src/_provider.ts";
+
+vi.mock("../src/_config.ts", () => ({
+  loadConfig: vi.fn(() => ({ config: {}, path: undefined })),
+}));
 
 class StubProvider extends BaseVoiceProvider {
   name = "stub";
