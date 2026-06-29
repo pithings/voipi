@@ -80,7 +80,7 @@ const AGENTS: Agent[] = [
     json: (launcher, global) => {
       const sl = shellMcpLauncher(launcher);
       return {
-        path: _configPath(global ? "~/.config/opencode/.opencode.json" : "opencode.json"),
+        path: _configPath(global ? "~/.config/opencode/opencode.json" : "opencode.json"),
         build: () => ({
           mcp: { voipi: { type: "local", command: [sl.command, ...sl.args] } },
         }),
