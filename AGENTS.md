@@ -7,9 +7,11 @@
 - `src/types.ts` — Core interfaces (`SpeakOptions`, `Voice`)
 - `src/_provider.ts` — `BaseVoiceProvider` abstract class with `AudioData` type. Subclasses implement `synthesize()`, base handles `speak()`, `save()`, `toAudio()`
 - `src/_audio.ts` — Audio duration utilities: `getAudioDuration(data, ext)` (parses WAV/AIFF headers, estimates MP3 from bitrate), `estimateSpeechDuration(text, rate)` (pre-synthesis ~150 WPM heuristic)
+- `src/_npz.ts` — Minimal NPZ/NPY reader used for KittenTTS voice embeddings (`voices.npz`)
+- `src/_wav.ts` — PCM float32 → mono 16-bit WAV encoder used by KittenTTS
 - `src/_utils.ts` — Shared helpers: `getNodeBuiltin()` (safe `node:` access via `getBuiltinModule`), `exec()`, `playAudio()` (cross-platform: `afplay`/`ffplay`/PowerShell; Linux surfaces backend permission/connection failures), `resolveVoice()` (prioritized voice list matching)
 - `src/_ws.ts` — Zero-dep WebSocket client over `node:tls` (used by Edge TTS for custom headers). Handles framing, masking, ping/pong
-- `src/voipi.ts` — `VoiPi` class: auto-selecting provider with fallback chain (macOS → Edge TTS → Google TTS → Piper → eSpeak NG). Lazy-resolves on first call
+- `src/voipi.ts` — `VoiPi` class: auto-selecting provider with fallback chain (macOS → Edge TTS → Google TTS → Piper → eSpeak NG). Lazy-resolves on first call. `kitten-tts` is available for explicit selection but is not in the default auto chain.
 - `src/providers/` — Provider implementations
 - `src/cli/index.ts` — CLI entrypoint (`voipi speak`, `voipi voices`, `voipi mcp`, `--provider` flag, default: `auto`)
 - `src/cli/_mcp.ts` — Zero-dependency JSON-RPC stdio MCP server exposing `speak`, `save`, and `list_voices`; auto-detects newline-delimited JSON vs standard MCP `Content-Length` framing on stdio
@@ -29,7 +31,7 @@ class MyProvider extends BaseVoiceProvider {
 
 Optional overrides: `hasVoice(id)` (fast sync check), `listVoices()`, `speak()`, `save()`.
 
-Providers are exported from both the main entry (`voipi`) and as subpath exports (`voipi/macos`, `voipi/edge-tts`, `voipi/google-tts`, `voipi/piper`, `voipi/espeak-ng`).
+Providers are exported from both the main entry (`voipi`) and as subpath exports (`voipi/macos`, `voipi/edge-tts`, `voipi/google-tts`, `voipi/piper`, `voipi/espeak-ng`, `voipi/kitten-tts`).
 
 ## Providers
 
@@ -39,6 +41,7 @@ Providers are exported from both the main entry (`voipi`) and as subpath exports
 - **Piper** (`src/providers/piper.ts`) — Local neural TTS via [piper1-gpl](https://github.com/OHF-Voice/piper1-gpl). Auto-downloads standalone binary + ONNX voice models to `os.tmpdir()/voipi-piper/`. 40+ languages, multiple quality levels. Outputs WAV (16-bit PCM). Supports `lengthScale` (rate), `speaker` (multi-speaker models). Default voice: `en_US-amy-low`. Voices fetched from HuggingFace (`rhasspy/piper-voices`). Fully offline after first download.
 - **GoogleTTS** (`src/providers/google-tts.ts`) — Google Translate unofficial TTS endpoint (HTTP GET → MP3). Zero deps. 55+ languages, one voice per lang. 200-char chunk limit with word-boundary auto-splitting. `rate < 0.75` triggers slow mode. Fragile (unofficial API).
 - **EspeakNG** (`src/providers/espeak-ng.ts`) — Local TTS via [espeak-ng](https://github.com/espeak-ng/espeak-ng) CLI. Requires `espeak-ng` installed on system. `create()` static factory checks availability. Outputs WAV (`--stdout`). Overrides `speak()` directly (no temp file). Voice selection via language code (e.g. `en`, `en-us+f3`). Rate maps to ~175 WPM base. `listVoices()` parses `espeak-ng --voices` output. Auto-detects language via `detectLanguage()`. Linux-preferred in auto-detection chain.
+- **KittenTTS** (`src/providers/kitten-tts.ts`) — Local neural TTS using KittenML ONNX models with `onnxruntime-node` + JS/WASM `phonemizer` (no Python). Downloads `config.json`, `voices.npz`, and model `.onnx` on demand from Hugging Face into `os.tmpdir()/voipi-kittentts/`. Defaults to the highest-quality official model (`KittenML/kitten-tts-mini-0.8`) and `Bella`. Supports the 8 built-in English voices (`Bella`, `Jasper`, `Luna`, `Bruno`, `Rosie`, `Hugo`, `Kiki`, `Leo`), chunks long text at ~400 chars, dynamically trims leading/trailing silence, adds a short tail pad, and outputs 24 kHz mono WAV.
 - **BrowserTTS** (`src/providers/browser.ts`) — Web Speech API (`speechSynthesis`). Browser-only. Overrides `speak()` directly (no raw audio export). `synthesize()` and `save()` throw. Voices load async; `_getVoices()` handles `voiceschanged` event. Matches voices by `voiceURI` or `name`.
 
 ## Key Internals
@@ -55,13 +58,13 @@ Providers are exported from both the main entry (`voipi`) and as subpath exports
 - Avoid importing `node:` APIs directly. Use `getNodeBuiltin()` from `_utils.ts`
 - Prefix internal (non-exported) files with `_` (e.g., `_utils.ts`, `_ws.ts`, `_provider.ts`)
 - Place non-exported helpers at the end of files (after `// ---- internals ----` comment)
-- Zero external runtime dependencies — everything is built-in or uses web/Node APIs
+- Keep core helpers dependency-light. Current runtime deps are provider-specific: `onnxruntime-node`, `phonemizer`, and `jszip` are only used by `kitten-tts`.
 
 ## Build
 
 - Uses `obuild` with entries in `build.config.mjs`
 - Entries: `index.ts`, `cli/index.ts`, and each provider individually
-- Subpath exports in `package.json`: `.`, `./macos`, `./edge-tts`, `./google-tts`, `./piper`, `./espeak-ng`, `./browser`
+- Subpath exports in `package.json`: `.`, `./macos`, `./edge-tts`, `./google-tts`, `./piper`, `./espeak-ng`, `./kitten-tts`, `./browser`
 - TypeScript strict mode with `tsgo` (`@typescript/native-preview`)
 - Linting: `oxlint` + `oxfmt`
 

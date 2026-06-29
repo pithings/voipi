@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MacOS, EdgeTTS, GoogleTTS, BaseVoiceProvider } from "../src/index.ts";
+import { MacOS, EdgeTTS, GoogleTTS, KittenTTS, BaseVoiceProvider } from "../src/index.ts";
 
 const isMacOS = process.platform === "darwin";
 
@@ -22,6 +22,49 @@ const providers = [
 ] as const;
 
 describe("voipi", () => {
+  describe("kitten-tts provider", () => {
+    it("lists the built-in KittenTTS voices", async () => {
+      const provider = new KittenTTS();
+      expect(provider.name).toBe("kitten-tts");
+      expect(provider.hasVoice?.("Bella")).toBe(true);
+      expect(provider.hasVoice?.("expr-voice-5-m")).toBe(true);
+      expect(provider.hasVoice?.("unknown")).toBe(false);
+
+      const voices = await provider.listVoices();
+      expect(voices.map((voice) => voice.id)).toEqual([
+        "Bella",
+        "Jasper",
+        "Luna",
+        "Bruno",
+        "Rosie",
+        "Hugo",
+        "Kiki",
+        "Leo",
+      ]);
+    });
+
+    it("trims leading silence without clipping the ending", async () => {
+      const provider = new KittenTTS({ model: "KittenML/kitten-tts-nano-0.8-int8" });
+      const audio = await provider.synthesize("hello world");
+      const pcm = new Int16Array(
+        audio.data.buffer,
+        audio.data.byteOffset + 44,
+        (audio.data.length - 44) / 2,
+      );
+
+      let start = -1;
+      let end = -1;
+      for (let i = 0; i < pcm.length; i++) {
+        const level = Math.abs(pcm[i]!);
+        if (start === -1 && level > 20) start = i;
+        if (level > 20) end = i;
+      }
+
+      expect(start / 24_000).toBeLessThan(0.12);
+      expect((pcm.length - 1 - end) / 24_000).toBeGreaterThan(0.015);
+    });
+  });
+
   for (const { name, factory, skip } of providers) {
     describe.skipIf(skip)(`${name} provider`, () => {
       it("creates a provider with correct interface", () => {

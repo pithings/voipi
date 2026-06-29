@@ -16,3 +16,5 @@ export { Piper } from "./providers/piper.ts";
 export type { PiperOptions } from "./providers/piper.ts";
 export { EspeakNG } from "./providers/espeak-ng.ts";
 export type { EspeakNGOptions } from "./providers/espeak-ng.ts";
+export { KittenTTS } from "./providers/kitten-tts.ts";
+export type { KittenTTSOptions } from "./providers/kitten-tts.ts";

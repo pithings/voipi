@@ -12,10 +12,17 @@ import { providerMap } from "../src/voipi.ts";
 const ROOT = new URL("..", import.meta.url).pathname;
 const SAMPLES_DIR = join(ROOT, "website/samples");
 const TEXT =
-  "VoiPi is a free and zero-dependency text-to-speech library for JavaScript. It auto-detects languages and picks the best voice across six providers.";
+  "VoiPi is a free text-to-speech library for JavaScript. It auto-detects languages and picks the best voice across seven providers.";
 
 // Skip browser provider (requires DOM)
-const ALL_PROVIDERS = ["macos", "piper", "edge-tts", "google-tts", "espeak-ng"] as const;
+const ALL_PROVIDERS = [
+  "macos",
+  "piper",
+  "edge-tts",
+  "google-tts",
+  "espeak-ng",
+  "kitten-tts",
+] as const;
 
 const { values } = parseArgs({
   options: { p: { type: "string" } },

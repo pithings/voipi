@@ -115,6 +115,7 @@ function initDemo() {
     "google-tts": { import: "voipi/google-tts", cls: "GoogleTTS" },
     piper: { import: "voipi/piper", cls: "Piper" },
     "espeak-ng": { import: "voipi/espeak-ng", cls: "EspeakNG" },
+    "kitten-tts": { import: "voipi/kitten-tts", cls: "KittenTTS" },
     macos: { import: "voipi/macos", cls: "MacOS" },
   };
 

@@ -29,6 +29,7 @@ export const providerMap: Record<
   "edge-tts": (opts) => import("./providers/edge-tts.ts").then((m) => new m.EdgeTTS(opts)),
   "google-tts": (opts) => import("./providers/google-tts.ts").then((m) => new m.GoogleTTS(opts)),
   "espeak-ng": (opts) => import("./providers/espeak-ng.ts").then((m) => m.EspeakNG.create(opts)),
+  "kitten-tts": (opts) => import("./providers/kitten-tts.ts").then((m) => new m.KittenTTS(opts)),
   browser: () => import("./providers/browser.ts").then((m) => new m.BrowserTTS()),
 };
 

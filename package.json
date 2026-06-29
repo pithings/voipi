@@ -27,6 +27,8 @@
     "./edge-tts": "./dist/providers/edge-tts.mjs",
     "./google-tts": "./dist/providers/google-tts.mjs",
     "./piper": "./dist/providers/piper.mjs",
+    "./espeak-ng": "./dist/providers/espeak-ng.mjs",
+    "./kitten-tts": "./dist/providers/kitten-tts.mjs",
     "./browser": "./dist/providers/browser.mjs"
   },
   "scripts": {
@@ -39,6 +41,11 @@
     "release": "pnpm test && pnpm build && changelogen --release && npm publish && git push --follow-tags",
     "test": "pnpm lint && pnpm typecheck && vitest run --coverage",
     "typecheck": "tsgo --noEmit --skipLibCheck"
+  },
+  "dependencies": {
+    "jszip": "^3.10.1",
+    "onnxruntime-node": "^1.24.3",
+    "phonemizer": "^1.2.1"
   },
   "devDependencies": {
     "@mariozechner/pi-tui": "*",

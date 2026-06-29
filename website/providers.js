@@ -4,6 +4,19 @@ export const providers = {
     label: "Auto",
     voices: [],
   },
+  "kitten-tts": {
+    label: "KittenTTS",
+    voices: [
+      { id: "Bella" },
+      { id: "Jasper" },
+      { id: "Luna" },
+      { id: "Bruno" },
+      { id: "Rosie" },
+      { id: "Hugo" },
+      { id: "Kiki" },
+      { id: "Leo" },
+    ],
+  },
   "edge-tts": {
     label: "Edge TTS",
     voices: [

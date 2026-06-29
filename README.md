@@ -4,11 +4,11 @@
 
 <h1 align="center"><a href="https://voipi.vercel.app/">voipi</a></h1>
 
-Give your apps, CLIs, and agents a voice. VoiPi is a universal, zero-dependency, free text-to-speech library for JavaScript.
+Give your apps, CLIs, and agents a voice. VoiPi is a universal, free text-to-speech library for JavaScript.
 
-- Pure JS, Zero deps, Less than 100kB total install size and 10kB bundled providers
+- Pure JS API with provider-specific runtimes loaded only when needed
 - No API keys required
-- **Multiple providers:** [Browser TTS](#browser-tts), [macOS](#macos), [Edge TTS](#edge-tts), [Google TTS](#google-tts), [Piper](#piper), [eSpeak NG](#espeak-ng)
+- **Multiple providers:** [Browser TTS](#browser-tts), [macOS](#macos), [Edge TTS](#edge-tts), [Google TTS](#google-tts), [Piper](#piper), [KittenTTS](#kittentts), [eSpeak NG](#espeak-ng)
 - **Auto fallback:** Picks the best available provider per platform
 - **Auto language detection:** Detects script (Arabic, Farsi, CJK, Cyrillic, etc.) and Latin-script languages (French, Spanish, German, Portuguese, etc.) — picks the best voice automatically
 - **[MCP Server](#mcp-server):** Give AI agents a voice — auto install with Claude Code, Codex, Cursor, Windsurf, OpenCode and Pi.
@@ -219,6 +219,27 @@ const voice2 = new Piper({ voice: "en_US-lessac-medium", lengthScale: 0.8, speak
 await voice2.speak("Hello!");
 
 // List all available voices
+const voices = await voice.listVoices();
+```
+
+### KittenTTS
+
+Local neural TTS powered by [KittenTTS](https://github.com/kittenml/KittenTTS). It runs with `onnxruntime-node` and a JS/WASM phonemizer, with no Python dependency. Model files (`config.json`, `voices.npz`, `*.onnx`) are downloaded on demand from Hugging Face and cached in `os.tmpdir()/voipi-kittentts` by default. VoiPi now defaults to the highest-quality official model (`KittenML/kitten-tts-mini-0.8`) and `Bella` as the default voice.
+
+```ts
+import { KittenTTS } from "voipi/kitten-tts";
+
+const voice = new KittenTTS(); // defaults to mini model + Bella
+await voice.speak("Hello world!");
+
+// Pick a different model or default voice
+const voice2 = new KittenTTS({
+  model: "KittenML/kitten-tts-micro-0.8",
+  voice: "Bella",
+  numThreads: 4,
+});
+await voice2.speak("Hello!");
+
 const voices = await voice.listVoices();
 ```
 
