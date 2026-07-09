@@ -8,6 +8,7 @@ import { createProgress, estimateSynthTime } from "./_progress.ts";
 import { logo } from "./_logo.ts";
 import { serveMCP } from "./_mcp.ts";
 import { installMCP } from "./_install.ts";
+import { loadConfig } from "../_config.ts";
 
 const providerNames = ["auto", ...Object.keys(providerMap)];
 
@@ -20,6 +21,8 @@ Usage:
   voipi voices [-p|--provider <name>]
   voipi mcp [--install] [--no-global]
   voipi --help
+
+Config: ~/.voipirc.json (set default provider, voice, rate, lang)
 
 Providers: ${providerNames.map((n) => (n === "auto" ? "auto (default)" : n)).join(", ")}`);
     return;
@@ -43,6 +46,8 @@ ${o}Usage:${r}
   ${y}voipi mcp${r} ${d}— start MCP stdio server${r}
   ${y}voipi mcp --install${r} ${d}— install MCP server to detected agents (global by default)${r}
   ${y}voipi${r} ${d}--help${r}
+
+${o}Config:${r} ${d}~/.voipirc.json (set default provider, voice, rate, lang)${r}
 
 ${o}Providers:${r} ${providers}`);
 }
@@ -94,6 +99,7 @@ const { values, positionals } = parseArgs({
     rate: { type: "string", short: "r" },
     output: { type: "string", short: "o" },
     provider: { type: "string", short: "p" },
+    "show-config": { type: "boolean" },
     install: { type: "boolean" },
     global: { type: "boolean", short: "g", default: true },
   },
@@ -104,6 +110,16 @@ const { values, positionals } = parseArgs({
 const command = positionals[0];
 
 async function main(): Promise<void> {
+  if (values["show-config"]) {
+    const { path, config } = loadConfig();
+    console.log(`Config file: ${path ?? "none found"}`);
+    if (config.provider !== undefined) console.log(`  provider: ${config.provider}`);
+    if (config.voice !== undefined) console.log(`  voice: ${config.voice}`);
+    if (config.lang !== undefined) console.log(`  lang: ${config.lang}`);
+    if (config.rate !== undefined) console.log(`  rate: ${config.rate}`);
+    return;
+  }
+
   const providerName = values.provider || "auto";
   const voipi = createVoiPi(providerName);
 

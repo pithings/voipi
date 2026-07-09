@@ -49,6 +49,17 @@ npx voipi voices -p edge-tts
 npx voipi mcp
 ```
 
+Set persistent defaults in `~/.voipirc.json` so you don't have to pass flags every time:
+
+```json
+{
+  "provider": "edge-tts",
+  "voice": "en-US-GuyNeural",
+  "lang": "en",
+  "rate": 1.2
+}
+```
+
 ## MCP Server
 
 VoiPi includes a built-in [MCP](https://modelcontextprotocol.io/) server that exposes text-to-speech tools over the stdio transport. This lets AI agents and LLM clients speak text, save audio files, and list voices.

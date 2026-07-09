@@ -47,4 +47,5 @@ Or use the commands directly:
 
 - The extension defaults to `auto`, so VoiPi picks the best available provider.
 - Use `provider`, `voice`, `lang`, and `rate` tool parameters when you need explicit control.
+- You can set persistent defaults in `~/.voipirc.json` (e.g., `{"provider": "edge-tts", "voice": "en-US-GuyNeural", "lang": "en", "rate": 1.2}`).
 - Audio file output paths are resolved relative to pi's current working directory.
